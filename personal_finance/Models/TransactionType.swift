@@ -35,12 +35,14 @@ enum TransactionType: String, Codable, CaseIterable {
     case income
     case expense
     case transfer
+    case adjustment
 
     var displayName: String {
         switch self {
         case .income: "收入"
         case .expense: "支出"
         case .transfer: "轉帳"
+        case .adjustment: "餘額調整"
         }
     }
 }
