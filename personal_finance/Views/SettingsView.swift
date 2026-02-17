@@ -4,14 +4,11 @@ import WidgetKit
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Category.sortOrder) private var categories: [Category]
     @Query(sort: \Account.sortOrder) private var accounts: [Account]
     @Query(sort: \Transaction.date) private var allTransactions: [Transaction]
 
     @AppStorage("appColorScheme") private var appColorScheme = "system"
 
-    @State private var showAddCategory = false
-    @State private var editingCategory: Category?
     @State private var showAddAccount = false
     @State private var editingAccount: Account?
     @State private var showResetConfirmation = false
@@ -67,23 +64,12 @@ struct SettingsView: View {
                     }
                 }
 
-                // MARK: - 支出分類
-                Section("支出分類") {
-                    ForEach(categories.filter { $0.type == .expense }) { category in
-                        categoryRow(category)
-                    }
-                    .onDelete { offsets in
-                        deleteCategories(offsets: offsets, type: .expense)
-                    }
-                }
-
-                // MARK: - 收入分類
-                Section("收入分類") {
-                    ForEach(categories.filter { $0.type == .income }) { category in
-                        categoryRow(category)
-                    }
-                    .onDelete { offsets in
-                        deleteCategories(offsets: offsets, type: .income)
+                // MARK: - 分類
+                Section("分類") {
+                    NavigationLink {
+                        CategoryManagementView()
+                    } label: {
+                        Label("分類管理", systemImage: "tag")
                     }
                 }
 
@@ -118,25 +104,12 @@ struct SettingsView: View {
                     HStack {
                         Text("版本")
                         Spacer()
-                        Text("1.1.0")
+                        Text("2.0.0")
                             .foregroundStyle(AppTheme.secondaryText)
                     }
                 }
             }
             .navigationTitle("設定")
-            .toolbar {
-                Button {
-                    showAddCategory = true
-                } label: {
-                    Image(systemName: "plus")
-                }
-            }
-            .sheet(isPresented: $showAddCategory) {
-                CategoryFormView(mode: .add)
-            }
-            .sheet(item: $editingCategory) { category in
-                CategoryFormView(mode: .edit(category))
-            }
             .sheet(isPresented: $showAddAccount) {
                 AccountFormView(mode: .add)
             }
@@ -152,41 +125,6 @@ struct SettingsView: View {
                 Text("這將刪除所有交易紀錄和帳戶資料。此操作無法復原。")
             }
         }
-    }
-
-    private func categoryRow(_ category: Category) -> some View {
-        Button {
-            editingCategory = category
-        } label: {
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(Color(hex: category.colorHex).opacity(0.15))
-                        .frame(width: 36, height: 36)
-                    Image(systemName: category.icon)
-                        .foregroundStyle(Color(hex: category.colorHex))
-                }
-                Text(category.name)
-                    .foregroundStyle(AppTheme.onBackground)
-                Spacer()
-                if category.isDefault {
-                    Text("預設")
-                        .font(.caption)
-                        .foregroundStyle(AppTheme.secondaryText)
-                }
-            }
-        }
-    }
-
-    private func deleteCategories(offsets: IndexSet, type: TransactionType) {
-        let filtered = categories.filter { $0.type == type }
-        for index in offsets {
-            let category = filtered[index]
-            if !category.isDefault {
-                modelContext.delete(category)
-            }
-        }
-        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func deleteAccounts(offsets: IndexSet) {
@@ -206,148 +144,17 @@ struct SettingsView: View {
         for account in accounts {
             modelContext.delete(account)
         }
-        for category in categories {
-            modelContext.delete(category)
+        // Fetch categories via descriptor for deletion
+        let descriptor = FetchDescriptor<Category>()
+        if let allCategories = try? modelContext.fetch(descriptor) {
+            for category in allCategories {
+                modelContext.delete(category)
+            }
         }
         try? modelContext.save()
         // Re-seed defaults
         DefaultCategories.seed(into: modelContext)
         DefaultCategories.seedAccounts(into: modelContext)
         WidgetCenter.shared.reloadAllTimelines()
-    }
-}
-
-// MARK: - CategoryFormView
-
-struct CategoryFormView: View {
-    enum Mode: Identifiable {
-        case add
-        case edit(Category)
-
-        var id: String {
-            switch self {
-            case .add: return "add"
-            case .edit(let cat): return "\(cat.persistentModelID.hashValue)"
-            }
-        }
-    }
-
-    let mode: Mode
-    @Environment(\.modelContext) private var modelContext
-    @Environment(\.dismiss) private var dismiss
-
-    @State private var name = ""
-    @State private var icon = "tag.fill"
-    @State private var colorHex = "#607D8B"
-    @State private var type: TransactionType = .expense
-
-    private let iconOptions = [
-        "fork.knife", "car.fill", "gamecontroller.fill", "bag.fill",
-        "house.fill", "cross.case.fill", "book.fill", "tag.fill",
-        "briefcase.fill", "star.fill", "gift.fill", "heart.fill"
-    ]
-
-    private let colorOptions = [
-        "#FF9800", "#2196F3", "#9C27B0", "#E91E63",
-        "#795548", "#F44336", "#3F51B5", "#607D8B",
-        "#4CAF50", "#FFC107", "#00BCD4", "#8BC34A"
-    ]
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                TextField("名稱", text: $name)
-
-                Picker("類型", selection: $type) {
-                    Text("支出").tag(TransactionType.expense)
-                    Text("收入").tag(TransactionType.income)
-                }
-
-                Section("圖標") {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
-                        ForEach(iconOptions, id: \.self) { ic in
-                            Button {
-                                icon = ic
-                            } label: {
-                                Image(systemName: ic)
-                                    .font(.title3)
-                                    .frame(width: 40, height: 40)
-                                    .background(icon == ic ? Color(hex: colorHex).opacity(0.2) : Color.clear)
-                                    .clipShape(Circle())
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
-
-                Section("顏色") {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
-                        ForEach(colorOptions, id: \.self) { hex in
-                            Button {
-                                colorHex = hex
-                            } label: {
-                                Circle()
-                                    .fill(Color(hex: hex))
-                                    .frame(width: 32, height: 32)
-                                    .overlay {
-                                        if colorHex == hex {
-                                            Image(systemName: "checkmark")
-                                                .font(.caption.bold())
-                                                .foregroundStyle(.white)
-                                        }
-                                    }
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
-            }
-            .navigationTitle(isEditing ? "編輯分類" : "新增分類")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("儲存") {
-                        save()
-                        dismiss()
-                    }
-                    .disabled(name.isEmpty)
-                }
-            }
-            .onAppear {
-                if case .edit(let category) = mode {
-                    name = category.name
-                    icon = category.icon
-                    colorHex = category.colorHex
-                    type = category.type
-                }
-            }
-        }
-    }
-
-    private var isEditing: Bool {
-        if case .edit = mode { return true }
-        return false
-    }
-
-    private func save() {
-        switch mode {
-        case .add:
-            let category = Category(
-                name: name,
-                icon: icon,
-                colorHex: colorHex,
-                type: type,
-                sortOrder: 99
-            )
-            modelContext.insert(category)
-        case .edit(let category):
-            category.name = name
-            category.icon = icon
-            category.colorHex = colorHex
-            category.type = type
-        }
     }
 }
