@@ -1,43 +1,3 @@
-// ============================================================================
-// MARK: - AddTransactionView.swift
-// 模組：Views
-//
-// 功能說明：
-//   新增交易（記帳）頁面，提供使用者輸入收入或支出交易的完整表單。
-//   支援選擇交易類型、帳戶、金額輸入、分類選取、日期與備註，
-//   儲存後顯示成功動畫回饋。
-//
-// 主要職責：
-//   - 提供支出/收入類型切換
-//   - 顯示帳戶選擇器（水平捲動膠囊按鈕），預設選取 isDefault 帳戶
-//   - 提供大字體金額輸入欄位（僅數字鍵盤）
-//   - 以 4 欄網格顯示分類選擇按鈕（依交易類型篩選）
-//   - 儲存交易至 SwiftData 並同步 Widget 資料快照
-//   - 儲存成功後重置表單並顯示「已儲存」覆蓋動畫
-//
-// UI 結構：
-//   - Picker（Segmented）: 支出/收入類型切換
-//   - accountSelector: 水平捲動的帳戶膠囊按鈕列
-//   - amountSection: 大字體金額輸入區，顏色隨交易類型變化
-//   - categoryGrid: 4 欄 LazyVGrid 分類圖示按鈕，選取時顯示外框
-//   - DatePicker: 日期選擇器（compact 樣式）
-//   - TextField: 備註輸入欄位（選填）
-//   - saveButton: 儲存按鈕，未填完必要欄位時禁用
-//   - savedOverlay: 儲存成功覆蓋層，含打勾圖示與「已儲存」文字
-//
-// 資料依賴：
-//   - @Environment(\.modelContext): 用於寫入交易資料
-//   - @Query categories: 全部分類，依 sortOrder 排序
-//   - @Query accounts: 全部帳戶，依 sortOrder 排序
-//   - @State selectedType / amountText / selectedCategory / selectedAccount / date / note
-//
-// 注意事項：
-//   - 切換交易類型時會清除已選分類（onChange）
-//   - canSave 驗證：金額 > 0 且已選分類與帳戶
-//   - 儲存後透過 WidgetDataSync.updateSnapshot 同步 Widget
-//   - 成功回饋動畫 1.5 秒後自動消失
-// ============================================================================
-
 import SwiftUI
 import SwiftData
 import WidgetKit
@@ -54,42 +14,41 @@ struct AddTransactionView: View {
     @State private var date = Date.now
     @State private var note = ""
     @State private var showSavedFeedback = false
+    @State private var showDatePicker = false
+    @State private var isEditingNote = false
 
     private var filteredCategories: [Category] {
         categories.filter { $0.type == selectedType }
     }
 
+    private var canSave: Bool {
+        guard let amount = Decimal(string: amountText), amount > 0 else { return false }
+        return selectedCategory != nil && selectedAccount != nil
+    }
+
     var body: some View {
         ZStack {
-            NavigationStack {
-                ScrollView {
-                    VStack(spacing: 20) {
-                        Picker("類型", selection: $selectedType) {
-                            Text("支出").tag(TransactionType.expense)
-                            Text("收入").tag(TransactionType.income)
-                        }
-                        .pickerStyle(.segmented)
-                        .onChange(of: selectedType) {
-                            selectedCategory = nil
-                        }
-
-                        accountSelector
-                        amountSection
-                        categoryGrid
-
-                        DatePicker("日期", selection: $date, displayedComponents: .date)
-                            .datePickerStyle(.compact)
-                            .padding(.horizontal, 4)
-
-                        TextField("備註（選填）", text: $note)
-                            .textFieldStyle(.roundedBorder)
-
-                        saveButton
-                    }
-                    .padding(.horizontal, AppTheme.horizontalPadding)
-                    .padding(.top, 8)
+            VStack(spacing: 0) {
+                // === Upper section ===
+                VStack(spacing: 12) {
+                    typePicker
+                    categoryScrollRow
+                    accountChips
+                    amountDisplay
+                    dateNoteRow
                 }
-                .navigationTitle("記帳")
+                .padding(.horizontal, AppTheme.horizontalPadding)
+                .padding(.top, 8)
+
+                Spacer(minLength: 8)
+
+                // === Lower section: Number pad ===
+                NumberPadView(
+                    text: $amountText,
+                    onSave: saveTransaction,
+                    canSave: canSave
+                )
+                .padding(.bottom, 8)
             }
 
             if showSavedFeedback {
@@ -105,112 +64,206 @@ struct AddTransactionView: View {
                 selectedAccount = accounts.first(where: { $0.isDefault }) ?? accounts.first
             }
         }
+        .sheet(isPresented: $showDatePicker) {
+            datePickerSheet
+        }
     }
 
-    private var accountSelector: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("帳戶")
-                .font(AppTheme.captionFont)
-                .foregroundStyle(AppTheme.secondaryText)
+    // MARK: - Type Picker
 
+    private var typePicker: some View {
+        Picker("類型", selection: $selectedType) {
+            Text("支出").tag(TransactionType.expense)
+            Text("收入").tag(TransactionType.income)
+        }
+        .pickerStyle(.segmented)
+        .onChange(of: selectedType) {
+            selectedCategory = nil
+        }
+    }
+
+    // MARK: - Category Scroll Row
+
+    private var categoryScrollRow: some View {
+        ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(accounts) { account in
-                        let isSelected = selectedAccount?.id == account.id
-                        Button {
-                            selectedAccount = account
-                        } label: {
-                            HStack(spacing: 6) {
-                                Image(systemName: account.icon)
-                                    .font(.caption)
-                                Text(account.name)
-                                    .font(.subheadline)
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(isSelected ? AppTheme.primaryDark : AppTheme.surface)
-                            .foregroundStyle(isSelected ? .white : AppTheme.onBackground)
-                            .clipShape(Capsule())
-                        }
-                        .buttonStyle(.plain)
+                HStack(spacing: 4) {
+                    ForEach(filteredCategories) { category in
+                        categoryItem(category)
+                            .id(category.id)
+                    }
+                }
+                .padding(.horizontal, 4)
+            }
+            .onChange(of: selectedType) {
+                if let first = filteredCategories.first {
+                    withAnimation {
+                        proxy.scrollTo(first.id, anchor: .leading)
                     }
                 }
             }
         }
     }
 
-    private var amountSection: some View {
-        VStack(spacing: 8) {
+    private func categoryItem(_ category: Category) -> some View {
+        let isSelected = selectedCategory?.id == category.id
+        let color = Color(hex: category.colorHex)
+        return Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                selectedCategory = category
+            }
+        } label: {
+            VStack(spacing: 4) {
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(isSelected ? 0.25 : 0.12))
+                        .frame(width: 48, height: 48)
+                    Image(systemName: category.icon)
+                        .font(.system(size: isSelected ? 28 : 22))
+                        .foregroundStyle(color)
+                }
+                .scaleEffect(isSelected ? 1.1 : 1.0)
+
+                Text(category.name)
+                    .font(.caption2)
+                    .foregroundStyle(AppTheme.onBackground)
+
+                RoundedRectangle(cornerRadius: 1.5)
+                    .fill(isSelected ? color : .clear)
+                    .frame(width: 24, height: 3)
+            }
+            .frame(width: 70)
+        }
+        .buttonStyle(.plain)
+        .animation(.easeInOut(duration: 0.2), value: isSelected)
+    }
+
+    // MARK: - Account Chips
+
+    private var accountChips: some View {
+        HStack(spacing: 8) {
+            ForEach(accounts) { account in
+                let isSelected = selectedAccount?.id == account.id
+                Button {
+                    selectedAccount = account
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: account.icon)
+                            .font(.caption)
+                        Text(account.name)
+                            .font(.subheadline)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(isSelected ? AppTheme.primaryDark : AppTheme.surface)
+                    .foregroundStyle(isSelected ? .white : AppTheme.onBackground)
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+            Spacer()
+        }
+    }
+
+    // MARK: - Amount Display
+
+    private var amountDisplay: some View {
+        VStack(spacing: 4) {
             Text(selectedType == .expense ? "支出金額" : "收入金額")
                 .font(AppTheme.captionFont)
                 .foregroundStyle(AppTheme.secondaryText)
 
-            TextField("0", text: $amountText)
+            Text("NT$ \(NumberPadLogic.formatted(amountText))")
                 .font(.system(size: 48, weight: .bold, design: .rounded))
-                .multilineTextAlignment(.center)
-                .keyboardType(.numberPad)
-                .foregroundStyle(selectedType == .expense ? AppTheme.expense : AppTheme.income)
+                .foregroundStyle(
+                    amountText.isEmpty
+                        ? AppTheme.secondaryText
+                        : (selectedType == .expense ? AppTheme.expense : AppTheme.income)
+                )
+                .contentTransition(.numericText())
+                .animation(.snappy, value: amountText)
         }
-        .padding(.vertical, 16)
+        .padding(.vertical, 8)
     }
 
-    private var categoryGrid: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 16) {
-            ForEach(filteredCategories) { category in
-                categoryButton(category)
-            }
-        }
-    }
+    // MARK: - Date + Note Row
 
-    private func categoryButton(_ category: Category) -> some View {
-        let isSelected = selectedCategory?.id == category.id
-        return Button {
-            selectedCategory = category
-        } label: {
-            VStack(spacing: 6) {
-                ZStack {
-                    Circle()
-                        .fill(Color(hex: category.colorHex).opacity(isSelected ? 0.3 : 0.1))
-                        .frame(width: 50, height: 50)
-                    Image(systemName: category.icon)
-                        .font(.title3)
-                        .foregroundStyle(Color(hex: category.colorHex))
+    private var dateNoteRow: some View {
+        HStack(spacing: 12) {
+            Button {
+                showDatePicker = true
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "calendar")
+                        .font(.caption)
+                    Text(dateDisplayText)
+                        .font(.subheadline)
                 }
-                .overlay {
-                    if isSelected {
-                        Circle()
-                            .stroke(Color(hex: category.colorHex), lineWidth: 2)
-                            .frame(width: 50, height: 50)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(AppTheme.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            .buttonStyle(.plain)
+
+            if isEditingNote {
+                TextField("備註", text: $note, onCommit: {
+                    isEditingNote = false
+                })
+                .textFieldStyle(.roundedBorder)
+                .font(.subheadline)
+            } else {
+                Button {
+                    isEditingNote = true
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "pencil")
+                            .font(.caption)
+                        Text(note.isEmpty ? "新增備註" : note)
+                            .font(.subheadline)
+                            .foregroundStyle(note.isEmpty ? AppTheme.secondaryText : AppTheme.onBackground)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(AppTheme.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                .buttonStyle(.plain)
+            }
+
+            Spacer()
+        }
+    }
+
+    private var dateDisplayText: String {
+        if Calendar.current.isDateInToday(date) {
+            return "今天"
+        }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "M月d日"
+        return formatter.string(from: date)
+    }
+
+    // MARK: - Date Picker Sheet
+
+    private var datePickerSheet: some View {
+        NavigationStack {
+            DatePicker("選擇日期", selection: $date, displayedComponents: .date)
+                .datePickerStyle(.graphical)
+                .navigationTitle("選擇日期")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("完成") {
+                            showDatePicker = false
+                        }
                     }
                 }
-                Text(category.name)
-                    .font(.caption)
-                    .foregroundStyle(AppTheme.onBackground)
-            }
         }
-        .buttonStyle(.plain)
+        .presentationDetents([.medium])
     }
 
-    private var saveButton: some View {
-        Button {
-            saveTransaction()
-        } label: {
-            Text("儲存")
-                .font(.headline)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(canSave ? AppTheme.primaryDark : Color.gray.opacity(0.3))
-                .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonCornerRadius))
-        }
-        .disabled(!canSave)
-        .padding(.top, 8)
-    }
-
-    private var canSave: Bool {
-        guard let amount = Decimal(string: amountText), amount > 0 else { return false }
-        return selectedCategory != nil && selectedAccount != nil
-    }
+    // MARK: - Save
 
     private func saveTransaction() {
         guard let amount = Decimal(string: amountText), amount > 0 else { return }
@@ -230,16 +283,19 @@ struct AddTransactionView: View {
         selectedCategory = nil
         note = ""
         date = .now
+        isEditingNote = false
 
         withAnimation {
             showSavedFeedback = true
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             withAnimation {
                 showSavedFeedback = false
             }
         }
     }
+
+    // MARK: - Saved Overlay
 
     private var savedOverlay: some View {
         VStack {
