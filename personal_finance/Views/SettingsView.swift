@@ -8,6 +8,7 @@ struct SettingsView: View {
     @Query(sort: \Transaction.date) private var allTransactions: [Transaction]
 
     @AppStorage("appColorScheme") private var appColorScheme = "system"
+    @AppStorage("showDemoData") private var showDemoData = false
 
     @State private var showAddAccount = false
     @State private var editingAccount: Account?
@@ -75,6 +76,18 @@ struct SettingsView: View {
 
                 // MARK: - 資料
                 Section("資料") {
+                    Toggle(isOn: $showDemoData) {
+                        Label("載入範例資料", systemImage: "doc.text.magnifyingglass")
+                    }
+                    .onChange(of: showDemoData) { _, newValue in
+                        if newValue {
+                            SampleDataGenerator.insertSampleData(into: modelContext)
+                        } else {
+                            SampleDataGenerator.removeSampleData(from: modelContext)
+                        }
+                        WidgetCenter.shared.reloadAllTimelines()
+                    }
+
                     NavigationLink {
                         iCloudBackupView()
                     } label: {
@@ -138,6 +151,7 @@ struct SettingsView: View {
     }
 
     private func resetAllData() {
+        showDemoData = false
         for tx in allTransactions {
             modelContext.delete(tx)
         }

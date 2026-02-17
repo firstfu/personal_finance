@@ -3,16 +3,16 @@ import SwiftData
 
 @Model
 final class Account {
-    var name: String
-    var type: AccountType
-    var icon: String
-    var colorHex: String
-    var initialBalance: Decimal
-    var sortOrder: Int
-    var isDefault: Bool
+    var name: String = ""
+    var type: AccountType = AccountType.cash
+    var icon: String = ""
+    var colorHex: String = "#000000"
+    var initialBalance: Decimal = 0
+    var sortOrder: Int = 0
+    var isDefault: Bool = false
 
     @Relationship(deleteRule: .nullify, inverse: \Transaction.account)
-    var transactions: [Transaction]
+    var transactions: [Transaction]? = []
 
     init(name: String, type: AccountType, icon: String, colorHex: String, initialBalance: Decimal = 0, sortOrder: Int = 0, isDefault: Bool = false) {
         self.name = name
@@ -26,10 +26,11 @@ final class Account {
     }
 
     var currentBalance: Decimal {
-        let incomeTotal = transactions
+        let allTransactions = transactions ?? []
+        let incomeTotal = allTransactions
             .filter { $0.type == .income }
             .reduce(Decimal.zero) { $0 + $1.amount }
-        let expenseTotal = transactions
+        let expenseTotal = allTransactions
             .filter { $0.type == .expense }
             .reduce(Decimal.zero) { $0 + $1.amount }
         return initialBalance + incomeTotal - expenseTotal

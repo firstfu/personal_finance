@@ -6,7 +6,7 @@ enum CSVExporter {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy/MM/dd"
 
-        for tx in transactions.sorted(by: { $0.date > $1.date }) {
+        for tx in transactions.filter({ !$0.isDemoData }).sorted(by: { $0.date > $1.date }) {
             let dateStr = dateFormatter.string(from: tx.date)
             let typeStr = tx.type.displayName
             let categoryStr = tx.category?.name ?? "未分類"

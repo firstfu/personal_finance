@@ -10,15 +10,15 @@ import SwiftData
 
 @Model
 final class Category {
-    var name: String
-    var icon: String
-    var colorHex: String
-    var type: TransactionType
-    var sortOrder: Int
-    var isDefault: Bool
+    var name: String = ""
+    var icon: String = ""
+    var colorHex: String = "#000000"
+    var type: TransactionType = TransactionType.expense
+    var sortOrder: Int = 0
+    var isDefault: Bool = false
 
     @Relationship(deleteRule: .nullify, inverse: \Transaction.category)
-    var transactions: [Transaction]
+    var transactions: [Transaction]? = []
 
     init(name: String, icon: String, colorHex: String, type: TransactionType, sortOrder: Int, isDefault: Bool = false) {
         self.name = name

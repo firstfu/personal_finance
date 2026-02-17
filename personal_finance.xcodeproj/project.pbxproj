@@ -31,7 +31,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 77CE58EC2F43FDE20059CF90 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = A1B2C3D4E5F6A7B8C9D0E1FF /* personal_finance_WidgetExtension */;
+			remoteGlobalIDString = A1B2C3D4E5F6A7B8C9D0E1FF;
 			remoteInfo = personal_finance_WidgetExtension;
 		};
 /* End PBXContainerItemProxy section */
@@ -54,9 +54,9 @@
 		77CE58F42F43FDE20059CF90 /* personal_finance.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = personal_finance.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		77CE59052F43FDE40059CF90 /* personal_financeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = personal_financeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		77CE590F2F43FDE40059CF90 /* personal_financeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = personal_financeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		A1B2C3D4E5F6A7B8C9D0E200 /* personal_finance_WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = personal_finance_WidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1B2C3D4E5F6A7B8C9D0E1F3 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		A1B2C3D4E5F6A7B8C9D0E1F5 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		A1B2C3D4E5F6A7B8C9D0E200 /* personal_finance_WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = personal_finance_WidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -70,15 +70,15 @@
 		A1B2C3D4E5F6A7B8C9D0E210 /* Exceptions for "personal_finance" folder in "personal_finance_WidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Models/Transaction.swift,
-				Models/TransactionType.swift,
-				Models/Category.swift,
+				Helpers/CurrencyFormatter.swift,
 				Models/Account.swift,
 				Models/AccountType.swift,
+				Models/Category.swift,
 				Models/DefaultCategories.swift,
+				Models/Transaction.swift,
+				Models/TransactionType.swift,
 				Theme/AppTheme.swift,
 				"Theme/Color+Hex.swift",
-				Helpers/CurrencyFormatter.swift,
 			);
 			target = A1B2C3D4E5F6A7B8C9D0E1FF /* personal_finance_WidgetExtension */;
 		};

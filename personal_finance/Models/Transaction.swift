@@ -3,15 +3,16 @@ import SwiftData
 
 @Model
 final class Transaction {
-    var amount: Decimal
-    var type: TransactionType
+    var amount: Decimal = 0
+    var type: TransactionType = TransactionType.expense
     var category: Category?
     var account: Account?
-    var note: String
-    var date: Date
-    var createdAt: Date
+    var note: String = ""
+    var date: Date = Date.now
+    var createdAt: Date = Date.now
+    var isDemoData: Bool = false
 
-    init(amount: Decimal, type: TransactionType, category: Category? = nil, account: Account? = nil, note: String = "", date: Date = .now) {
+    init(amount: Decimal, type: TransactionType, category: Category? = nil, account: Account? = nil, note: String = "", date: Date = .now, isDemoData: Bool = false) {
         self.amount = amount
         self.type = type
         self.category = category
@@ -19,5 +20,6 @@ final class Transaction {
         self.note = note
         self.date = date
         self.createdAt = .now
+        self.isDemoData = isDemoData
     }
 }

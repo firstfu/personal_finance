@@ -24,7 +24,10 @@ enum BackupService {
     static func createBackup(context: ModelContext) throws -> BackupDocument {
         let categoryDescriptor = FetchDescriptor<Category>(sortBy: [SortDescriptor(\.sortOrder)])
         let accountDescriptor = FetchDescriptor<Account>(sortBy: [SortDescriptor(\.sortOrder)])
-        let transactionDescriptor = FetchDescriptor<Transaction>(sortBy: [SortDescriptor(\.date)])
+        var transactionDescriptor = FetchDescriptor<Transaction>(
+            predicate: #Predicate<Transaction> { $0.isDemoData == false },
+            sortBy: [SortDescriptor(\.date)]
+        )
 
         let categories = try context.fetch(categoryDescriptor)
         let accounts = try context.fetch(accountDescriptor)
