@@ -50,6 +50,7 @@ struct AddTransactionView: View {
                     .padding(.top, 8)
                 }
                 .navigationTitle("記帳")
+                .background(Color(.systemBackground))
             }
 
             if showSavedFeedback {

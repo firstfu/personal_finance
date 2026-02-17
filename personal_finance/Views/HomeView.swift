@@ -173,7 +173,7 @@ struct HomeView: View {
             .padding(.vertical, 2)
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(AppTheme.surface)
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
     }
 
@@ -199,7 +199,7 @@ struct HomeView: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(AppTheme.surface)
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
     }
 }
