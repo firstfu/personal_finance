@@ -151,6 +151,11 @@ struct AccountFormView: View {
                     initialBalance = "\(account.initialBalance)"
                 }
             }
+            .sheet(isPresented: $showBalanceAdjustment) {
+                if case .edit(let account) = mode {
+                    BalanceAdjustmentView(account: account)
+                }
+            }
         }
     }
 
