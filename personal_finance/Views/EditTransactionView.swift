@@ -63,6 +63,7 @@ struct EditTransactionView: View {
         case .expense: AppTheme.expense
         case .income: AppTheme.income
         case .transfer: AppTheme.primary
+        case .adjustment: AppTheme.primary
         }
     }
 
