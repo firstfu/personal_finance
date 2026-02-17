@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import SpriteKit
 import UIKit
 import WidgetKit
 
@@ -21,6 +22,7 @@ struct AddTransactionView: View {
     @State private var growthPointsEarned = 0
     @State private var didStageUp = false
     @State private var newStageName = ""
+    @State private var miniSproutScene: SproutScene?
     @State private var showDatePicker = false
     @State private var showAmountPad = false
     @State private var showCategoryPicker = false
@@ -518,13 +520,31 @@ struct AddTransactionView: View {
                     if let stage = growthResult.newStage {
                         newStageName = SproutPlant.stageNameFor(stage: stage)
                     }
+
+                    // 建立 mini SpriteKit scene
+                    let currentPlantStage = SproutGrowthService.stageForPoints(
+                        sproutService.getActivePlant().growthPoints
+                    )
+                    let mini = SproutScene(size: CGSize(width: 200, height: 200))
+                    mini.scaleMode = .aspectFit
+                    mini.backgroundColor = .clear
+                    miniSproutScene = mini
+
                     withAnimation {
                         showGrowthPopup = true
                     }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+
+                    // 啟動 mini scene 動畫
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        mini.configure(stage: currentPlantStage, growthPoints: 0)
+                        mini.playWaterAnimation(pointsEarned: growthResult.pointsEarned)
+                    }
+
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
                         withAnimation {
                             showGrowthPopup = false
                         }
+                        miniSproutScene = nil
                     }
                 }
             }
@@ -553,10 +573,16 @@ struct AddTransactionView: View {
 
     private var growthOverlay: some View {
         VStack(spacing: 12) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 48))
-                .foregroundStyle(AppTheme.primary)
-                .symbolEffect(.bounce, value: showGrowthPopup)
+            if let scene = miniSproutScene {
+                SpriteView(scene: scene, options: [.allowsTransparency])
+                    .frame(width: 150, height: 150)
+                    .clipShape(Circle())
+            } else {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 48))
+                    .foregroundStyle(AppTheme.primary)
+                    .symbolEffect(.bounce, value: showGrowthPopup)
+            }
 
             Text("豆芽獲得成長！")
                 .font(.headline)

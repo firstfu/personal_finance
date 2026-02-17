@@ -52,7 +52,8 @@ xcodebuild test -project personal_finance.xcodeproj -scheme personal_finance \
 - `SproutGrowthService`：成長邏輯核心（每日記帳 +10 基礎點 + 連續天數 bonus）
 - 階段門檻：0 / 20 / 40 / 60 / 80 點
 - 記帳後自動澆灌，同一天多次記帳只觸發一次成長
-- 使用 SF Symbols + SwiftUI 原生動畫（未來可升級為 Lottie）
+- 使用 SpriteKit 2.5D Parallax 動畫（SKShapeNode 貝茲曲線繪製、SKEmitterNode 粒子效果）
+- SpriteKit 檔案位於 `SpriteKit/` 目錄：SproutScene、PlantNode、GroundNode、BackgroundNode、ParticleEffects
 
 ### UI 層
 - 根視圖 `ContentView` 使用 `TabView`（首頁/記帳/豆芽/分析/設定），首次啟動顯示 `OnboardingView`

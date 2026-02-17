@@ -4,11 +4,12 @@
 //
 // 功能說明：
 //   豆芽養成主頁面，顯示當前豆芽植物的成長狀態、進度、統計資訊。
-//   使用 SF Symbols + SwiftUI 動畫呈現各成長階段。
+//   使用 SpriteKit 2.5D Parallax 動畫呈現各成長階段。
 // ============================================================================
 
 import SwiftUI
 import SwiftData
+import SpriteKit
 
 struct SproutTabView: View {
     @Environment(\.modelContext) private var modelContext
@@ -17,7 +18,7 @@ struct SproutTabView: View {
 
     @State private var showHarvestGallery = false
     @State private var showHarvestCelebration = false
-    @State private var animatePlant = false
+    @State private var sproutScene: SproutScene?
 
     private var plant: SproutPlant? {
         activePlants.first
@@ -65,8 +66,11 @@ struct SproutTabView: View {
             }
             .onAppear {
                 ensurePlantExists()
-                withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                    animatePlant = true
+                setupScene()
+            }
+            .onChange(of: plant?.currentStage) { _, newStage in
+                if let stage = newStage {
+                    sproutScene?.configure(stage: stage, growthPoints: plant?.growthPoints ?? 0)
                 }
             }
             .overlay {
@@ -77,36 +81,34 @@ struct SproutTabView: View {
         }
     }
 
-    // MARK: - 植物視覺呈現
+    // MARK: - SpriteKit 植物視覺呈現
 
     private var plantVisual: some View {
         VStack(spacing: 16) {
-            ZStack {
-                // 背景光暈
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [stageColor.opacity(0.2), .clear],
-                            center: .center,
-                            startRadius: 40,
-                            endRadius: 150
-                        )
-                    )
-                    .frame(width: 300, height: 300)
-
-                // 植物圖示
-                Image(systemName: plant?.stageIcon ?? "leaf.circle")
-                    .font(.system(size: 120))
-                    .foregroundStyle(stageGradient)
-                    .scaleEffect(animatePlant ? 1.05 : 0.95)
-                    .shadow(color: stageColor.opacity(0.3), radius: 20, y: 10)
+            if let scene = sproutScene {
+                SpriteView(scene: scene, options: [.allowsTransparency])
+                    .frame(width: 350, height: 350)
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+            } else {
+                ProgressView()
+                    .frame(width: 350, height: 350)
             }
-            .frame(height: 260)
 
             Text(plant?.stageName ?? "種子")
                 .font(.title2.bold())
                 .foregroundStyle(AppTheme.onBackground)
         }
+    }
+
+    private func setupScene() {
+        if sproutScene == nil {
+            let scene = SproutScene(size: CGSize(width: 400, height: 400))
+            scene.scaleMode = .aspectFit
+            scene.backgroundColor = .clear
+            sproutScene = scene
+        }
+        let stage = plant?.currentStage ?? 0
+        sproutScene?.configure(stage: stage, growthPoints: plant?.growthPoints ?? 0)
     }
 
     // MARK: - 成長進度
@@ -289,14 +291,6 @@ struct SproutTabView: View {
         }
     }
 
-    private var stageGradient: LinearGradient {
-        LinearGradient(
-            colors: [stageColor, stageColor.opacity(0.6)],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-    }
-
     private func ensurePlantExists() {
         if activePlants.isEmpty {
             let service = SproutGrowthService(modelContext: modelContext)
@@ -308,6 +302,11 @@ struct SproutTabView: View {
         let service = SproutGrowthService(modelContext: modelContext)
         if service.harvestPlant() != nil {
             UINotificationFeedbackGenerator().notificationOccurred(.success)
+
+            sproutScene?.playStageUpAnimation(newStage: 0) { [self] in
+                setupScene()
+            }
+
             withAnimation {
                 showHarvestCelebration = true
             }
