@@ -24,6 +24,7 @@ import SwiftData
 struct ContentView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @AppStorage("appColorScheme") private var appColorScheme = "system"
+    @AppStorage("showDemoData") private var showDemoData = false
     @State private var selectedTab = 0
 
     private var colorScheme: ColorScheme? {
@@ -77,6 +78,20 @@ struct ContentView: View {
                 .tag(3)
         }
         .tint(AppTheme.primaryDark)
+        .safeAreaInset(edge: .top) {
+            if showDemoData {
+                HStack(spacing: 6) {
+                    Image(systemName: "eye.trianglebadge.exclamationmark")
+                        .font(.caption.bold())
+                    Text("範例資料模式")
+                        .font(.caption.bold())
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 6)
+                .background(AppTheme.primary.opacity(0.9))
+                .foregroundStyle(.white)
+            }
+        }
     }
 }
 

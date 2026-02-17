@@ -10,6 +10,7 @@ import SwiftData
 
 struct AllAccountsView: View {
     @Query(sort: \Account.sortOrder) private var accounts: [Account]
+    @AppStorage("showDemoData") private var showDemoData = false
 
     var body: some View {
         List {
@@ -30,9 +31,10 @@ struct AllAccountsView: View {
                                 Text(account.name)
                                     .font(.body)
                                 Spacer()
-                                Text(CurrencyFormatter.format(account.currentBalance))
+                                let balance = showDemoData ? account.demoBalance : account.currentBalance
+                                Text(CurrencyFormatter.format(balance))
                                     .font(.body.bold().monospacedDigit())
-                                    .foregroundStyle(account.currentBalance >= 0 ? AppTheme.onBackground : AppTheme.expense)
+                                    .foregroundStyle(balance >= 0 ? AppTheme.onBackground : AppTheme.expense)
                             }
                             .padding(.vertical, 4)
                         }
@@ -45,7 +47,7 @@ struct AllAccountsView: View {
                     Text("總淨值")
                         .font(.headline)
                     Spacer()
-                    let totalNetWorth = accounts.reduce(Decimal.zero) { $0 + $1.currentBalance }
+                    let totalNetWorth = accounts.reduce(Decimal.zero) { $0 + (showDemoData ? $1.demoBalance : $1.currentBalance) }
                     Text(CurrencyFormatter.format(totalNetWorth))
                         .font(.headline.bold().monospacedDigit())
                         .foregroundStyle(totalNetWorth >= 0 ? AppTheme.income : AppTheme.expense)
@@ -53,6 +55,6 @@ struct AllAccountsView: View {
             }
         }
         .navigationTitle("帳戶總覽")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

@@ -8,6 +8,7 @@ struct AllTransactionsView: View {
     private var allTransactions: [Transaction]
     @Query(sort: \Category.sortOrder) private var categories: [Category]
     @Query(sort: \Account.sortOrder) private var accounts: [Account]
+    @AppStorage("showDemoData") private var showDemoData = false
 
     // 搜尋
     @State private var searchText = ""
@@ -36,8 +37,12 @@ struct AllTransactionsView: View {
 
     // MARK: - 篩選邏輯
 
+    private var activeTransactions: [Transaction] {
+        allTransactions.filter { showDemoData ? $0.isDemoData : !$0.isDemoData }
+    }
+
     private var filteredTransactions: [Transaction] {
-        allTransactions.filter { tx in
+        activeTransactions.filter { tx in
             // 類型篩選
             if let filterType, tx.type != filterType { return false }
 
@@ -142,7 +147,7 @@ struct AllTransactionsView: View {
         }
         .searchable(text: $searchText, prompt: "搜尋備註、分類、金額...")
         .navigationTitle("全部交易")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {

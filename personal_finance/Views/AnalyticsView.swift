@@ -48,6 +48,7 @@ import Charts
 
 struct AnalyticsView: View {
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
+    @AppStorage("showDemoData") private var showDemoData = false
 
     @State private var periodState = TimePeriodState()
     @State private var selectedDate: Date?
@@ -69,13 +70,18 @@ struct AnalyticsView: View {
                 .padding(.horizontal, AppTheme.horizontalPadding)
             }
             .navigationTitle("分析")
+            .navigationBarTitleDisplayMode(.large)
             .background(Color(.systemBackground))
         }
     }
 
+    private var activeTransactions: [Transaction] {
+        allTransactions.filter { showDemoData ? $0.isDemoData : !$0.isDemoData }
+    }
+
     private var filteredTransactions: [Transaction] {
         let range = periodState.dateRange
-        return allTransactions.filter { $0.date >= range.start && $0.date < range.end }
+        return activeTransactions.filter { $0.date >= range.start && $0.date < range.end }
     }
 
     private var expenses: [Transaction] {

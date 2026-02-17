@@ -22,6 +22,7 @@ import SwiftUI
 import WidgetKit
 
 struct MediumWidgetView: View {
+    @Environment(\.colorScheme) private var colorScheme
     let entry: FinanceWidgetEntry
 
     var body: some View {
@@ -119,11 +120,15 @@ struct MediumWidgetView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .containerBackground(for: .widget) {
-            LinearGradient(
-                colors: [Color(hex: "#8BC34A"), Color(hex: "#2E7D32")],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            if colorScheme == .dark {
+                Color(.systemBackground)
+            } else {
+                LinearGradient(
+                    colors: [Color(hex: "#8BC34A"), Color(hex: "#2E7D32")],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            }
         }
         .widgetURL(URL(string: "personalfinance://home"))
     }

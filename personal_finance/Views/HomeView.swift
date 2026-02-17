@@ -43,6 +43,7 @@ struct HomeView: View {
     private var allTransactions: [Transaction]
     @Query(sort: \Account.sortOrder) private var accounts: [Account]
 
+    @AppStorage("showDemoData") private var showDemoData = false
     @State private var periodState = TimePeriodState(periodType: .month)
     @State private var selectedTransaction: Transaction?
 
@@ -64,6 +65,7 @@ struct HomeView: View {
                 .padding(.horizontal, AppTheme.horizontalPadding)
             }
             .background(Color(.systemBackground))
+            .toolbar(.hidden, for: .navigationBar)
         }
     }
 
@@ -97,9 +99,13 @@ struct HomeView: View {
         }
     }
 
+    private var activeTransactions: [Transaction] {
+        allTransactions.filter { showDemoData ? $0.isDemoData : !$0.isDemoData }
+    }
+
     private var monthlyTransactions: [Transaction] {
         let range = periodState.dateRange
-        return allTransactions.filter { $0.date >= range.start && $0.date < range.end }
+        return activeTransactions.filter { $0.date >= range.start && $0.date < range.end }
     }
 
     private var totalIncome: Decimal {
@@ -116,7 +122,7 @@ struct HomeView: View {
                 Text("嗨，你好")
                     .font(AppTheme.titleFont)
                     .foregroundStyle(AppTheme.onBackground)
-                Text(Date.now, format: .dateTime.year().month().day().weekday(.wide).locale(Locale(identifier: "zh-TW")))
+                Text(Self.chineseDateString)
                     .font(AppTheme.captionFont)
                     .foregroundStyle(AppTheme.secondaryText)
             }
@@ -126,6 +132,13 @@ struct HomeView: View {
                 .foregroundStyle(AppTheme.secondaryText)
         }
         .padding(.top, 8)
+    }
+
+    private static var chineseDateString: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "zh_TW")
+        formatter.dateFormat = "yyyy 年 M 月 d 日 EEEE"
+        return formatter.string(from: .now)
     }
 
     private var accountBalanceSection: some View {
@@ -158,7 +171,7 @@ struct HomeView: View {
                         Text(type.displayName)
                             .font(.body)
                         Spacer()
-                        let total = typeAccounts.reduce(Decimal.zero) { $0 + $1.currentBalance }
+                        let total = typeAccounts.reduce(Decimal.zero) { $0 + (showDemoData ? $1.demoBalance : $1.currentBalance) }
                         Text(CurrencyFormatter.format(total))
                             .font(.body.bold().monospacedDigit())
                             .foregroundStyle(total >= 0 ? AppTheme.onBackground : AppTheme.expense)
@@ -174,7 +187,7 @@ struct HomeView: View {
                 Text("總淨值")
                     .font(.headline)
                 Spacer()
-                let totalNetWorth = accounts.reduce(Decimal.zero) { $0 + $1.currentBalance }
+                let totalNetWorth = accounts.reduce(Decimal.zero) { $0 + (showDemoData ? $1.demoBalance : $1.currentBalance) }
                 Text(CurrencyFormatter.format(totalNetWorth))
                     .font(.headline.bold().monospacedDigit())
                     .foregroundStyle(totalNetWorth >= 0 ? AppTheme.income : AppTheme.expense)
@@ -200,14 +213,14 @@ struct HomeView: View {
                 .foregroundStyle(AppTheme.primary)
             }
 
-            if allTransactions.isEmpty {
+            if activeTransactions.isEmpty {
                 Text("尚無交易紀錄")
                     .font(.subheadline)
                     .foregroundStyle(AppTheme.secondaryText)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 32)
             } else {
-                ForEach(Array(allTransactions.prefix(5).enumerated()), id: \.element.id) { index, tx in
+                ForEach(Array(activeTransactions.prefix(5).enumerated()), id: \.element.id) { index, tx in
                     if index > 0 {
                         Divider()
                     }

@@ -54,66 +54,70 @@ struct AddTransactionView: View {
     }
 
     var body: some View {
-        ZStack {
-            Color(.systemGroupedBackground)
-                .ignoresSafeArea()
-
-            VStack(spacing: 0) {
-                // 1. 分段控制器
-                segmentedControl
-                    .padding(.horizontal, AppTheme.horizontalPadding)
-                    .padding(.top, 12)
-
-                // 2. 日期顯示
-                dateRow
-                    .padding(.top, 16)
-
-                // 3. 表單區域
-                formSection
-                    .padding(.horizontal, AppTheme.horizontalPadding)
-                    .padding(.top, 16)
-
-                // 4. 備註
-                noteSection
-                    .padding(.horizontal, AppTheme.horizontalPadding)
-                    .padding(.top, 12)
-
-                Spacer()
-
-                // 5. 底部按鈕
-                bottomButtons
-                    .padding(.horizontal, AppTheme.horizontalPadding)
-                    .padding(.bottom, 16)
-            }
-            .frame(maxWidth: 500)
-
-            if showSavedFeedback {
-                Color.black.opacity(0.25)
+        NavigationStack {
+            ZStack {
+                Color(.systemGroupedBackground)
                     .ignoresSafeArea()
-                    .transition(.opacity)
-                savedOverlay
+
+                VStack(spacing: 0) {
+                    // 1. 分段控制器
+                    segmentedControl
+                        .padding(.horizontal, AppTheme.horizontalPadding)
+                        .padding(.top, 12)
+
+                    // 2. 日期顯示
+                    dateRow
+                        .padding(.top, 16)
+
+                    // 3. 表單區域
+                    formSection
+                        .padding(.horizontal, AppTheme.horizontalPadding)
+                        .padding(.top, 16)
+
+                    // 4. 備註
+                    noteSection
+                        .padding(.horizontal, AppTheme.horizontalPadding)
+                        .padding(.top, 12)
+
+                    Spacer()
+
+                    // 5. 底部按鈕
+                    bottomButtons
+                        .padding(.horizontal, AppTheme.horizontalPadding)
+                        .padding(.bottom, 16)
+                }
+                .frame(maxWidth: 500)
+
+                if showSavedFeedback {
+                    Color.black.opacity(0.25)
+                        .ignoresSafeArea()
+                        .transition(.opacity)
+                    savedOverlay
+                }
             }
-        }
-        .animation(.easeInOut(duration: 0.3), value: showSavedFeedback)
-        .onAppear {
-            if selectedAccount == nil {
-                selectedAccount = accounts.first(where: { $0.isDefault }) ?? accounts.first
+            .navigationTitle("記帳")
+            .navigationBarTitleDisplayMode(.large)
+            .animation(.easeInOut(duration: 0.3), value: showSavedFeedback)
+            .onAppear {
+                if selectedAccount == nil {
+                    selectedAccount = accounts.first(where: { $0.isDefault }) ?? accounts.first
+                }
             }
-        }
-        .sheet(isPresented: $showDatePicker) {
-            datePickerSheet
-        }
-        .sheet(isPresented: $showAmountPad) {
-            amountInputSheet
-        }
-        .sheet(isPresented: $showCategoryPicker) {
-            categoryPickerSheet
-        }
-        .sheet(isPresented: $showAccountPicker) {
-            accountPickerSheet(isTransferTo: false)
-        }
-        .sheet(isPresented: $showTransferToAccountPicker) {
-            accountPickerSheet(isTransferTo: true)
+            .sheet(isPresented: $showDatePicker) {
+                datePickerSheet
+            }
+            .sheet(isPresented: $showAmountPad) {
+                amountInputSheet
+            }
+            .sheet(isPresented: $showCategoryPicker) {
+                categoryPickerSheet
+            }
+            .sheet(isPresented: $showAccountPicker) {
+                accountPickerSheet(isTransferTo: false)
+            }
+            .sheet(isPresented: $showTransferToAccountPicker) {
+                accountPickerSheet(isTransferTo: true)
+            }
         }
     }
 

@@ -89,7 +89,7 @@ struct SettingsView: View {
                                         .foregroundStyle(AppTheme.secondaryText)
                                 }
                                 Spacer()
-                                Text(CurrencyFormatter.format(account.currentBalance))
+                                Text(CurrencyFormatter.format(showDemoData ? account.demoBalance : account.currentBalance))
                                     .font(.body.monospacedDigit())
                                     .foregroundStyle(AppTheme.onBackground)
                             }
@@ -139,7 +139,8 @@ struct SettingsView: View {
                         }
                     }
                     Button {
-                        exportURL = CSVExporter.exportToFile(transactions: allTransactions)
+                        let txToExport = allTransactions.filter { showDemoData ? $0.isDemoData : !$0.isDemoData }
+                        exportURL = CSVExporter.exportToFile(transactions: txToExport)
                     } label: {
                         Label("匯出交易紀錄 (CSV)", systemImage: "doc.text")
                     }
@@ -164,6 +165,7 @@ struct SettingsView: View {
             .scrollContentBackground(.hidden)
             .background(Color(.systemBackground))
             .navigationTitle("設定")
+            .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showAddAccount) {
                 AccountFormView(mode: .add)
             }

@@ -70,6 +70,23 @@ final class Account {
         self.transactions = []
     }
 
+    var demoBalance: Decimal {
+        let demoTransactions = (transactions ?? []).filter { $0.isDemoData }
+        let incomeTotal = demoTransactions
+            .filter { $0.type == .income }
+            .reduce(Decimal.zero) { $0 + $1.amount }
+        let expenseTotal = demoTransactions
+            .filter { $0.type == .expense }
+            .reduce(Decimal.zero) { $0 + $1.amount }
+        let transferOutTotal = demoTransactions
+            .filter { $0.type == .transfer }
+            .reduce(Decimal.zero) { $0 + $1.amount }
+        let demoTransferIn = (transferInTransactions ?? []).filter { $0.isDemoData }
+        let transferInTotal = demoTransferIn
+            .reduce(Decimal.zero) { $0 + $1.amount }
+        return incomeTotal - expenseTotal - transferOutTotal + transferInTotal
+    }
+
     var currentBalance: Decimal {
         let allTransactions = transactions ?? []
         let incomeTotal = allTransactions
