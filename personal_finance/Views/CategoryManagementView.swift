@@ -84,6 +84,7 @@ struct CategoryManagementView: View {
             .onDelete(perform: deleteCategories)
         }
         .navigationTitle("分類管理")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             Button {
                 showAddCategory = true

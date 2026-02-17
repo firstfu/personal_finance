@@ -96,7 +96,7 @@ struct AddTransactionView: View {
                 }
             }
             .navigationTitle("記帳")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .animation(.easeInOut(duration: 0.3), value: showSavedFeedback)
             .onAppear {
                 if selectedAccount == nil {
