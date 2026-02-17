@@ -78,7 +78,7 @@ struct ContentView: View {
                 .tag(3)
         }
         .tint(AppTheme.primaryDark)
-        .safeAreaInset(edge: .top) {
+        .overlay(alignment: .top) {
             if showDemoData {
                 HStack(spacing: 6) {
                     Image(systemName: "eye.trianglebadge.exclamationmark")

@@ -131,7 +131,7 @@ struct HomeView: View {
                 .font(.title3)
                 .foregroundStyle(AppTheme.secondaryText)
         }
-        .padding(.top, 8)
+        .padding(.top, showDemoData ? 32 : 8)
     }
 
     private static var chineseDateString: String {
