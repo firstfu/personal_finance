@@ -32,6 +32,8 @@ struct personal_financeApp: App {
             Transaction.self,
             Category.self,
             Account.self,
+            SproutPlant.self,
+            HarvestRecord.self,
         ])
 
         let cloudConfig = ModelConfiguration(
@@ -65,6 +67,10 @@ struct personal_financeApp: App {
                     // Seed defaults (dedup by seedIdentifier)
                     DefaultCategories.seed(into: context)
                     DefaultCategories.seedAccounts(into: context)
+
+                    // Seed initial sprout plant if none exists
+                    let sproutService = SproutGrowthService(modelContext: context)
+                    _ = sproutService.getActivePlant()
 
                     // Update widget snapshot
                     WidgetDataSync.updateSnapshot(from: context)

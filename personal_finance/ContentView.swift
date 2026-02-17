@@ -74,17 +74,23 @@ struct ContentView: View {
                 }
                 .tag(1)
 
+            SproutTabView()
+                .tabItem {
+                    Label("豆芽", systemImage: "leaf.fill")
+                }
+                .tag(2)
+
             AnalyticsView()
                 .tabItem {
                     Label("分析", systemImage: "chart.bar.fill")
                 }
-                .tag(2)
+                .tag(3)
 
             SettingsView()
                 .tabItem {
                     Label("設定", systemImage: "gearshape.fill")
                 }
-                .tag(3)
+                .tag(4)
         }
         .tint(AppTheme.primaryDark)
         .overlay(alignment: .top) {
@@ -106,5 +112,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [Transaction.self, Category.self, Account.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, Account.self, SproutPlant.self, HarvestRecord.self], inMemory: true)
 }

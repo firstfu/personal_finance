@@ -17,6 +17,10 @@ struct AddTransactionView: View {
     @State private var date = Date.now
     @State private var note = ""
     @State private var showSavedFeedback = false
+    @State private var showGrowthPopup = false
+    @State private var growthPointsEarned = 0
+    @State private var didStageUp = false
+    @State private var newStageName = ""
     @State private var showDatePicker = false
     @State private var showAmountPad = false
     @State private var showCategoryPicker = false
@@ -95,10 +99,18 @@ struct AddTransactionView: View {
                         .transition(.opacity)
                     savedOverlay
                 }
+
+                if showGrowthPopup {
+                    Color.black.opacity(0.25)
+                        .ignoresSafeArea()
+                        .transition(.opacity)
+                    growthOverlay
+                }
             }
             .navigationTitle("記帳")
             .navigationBarTitleDisplayMode(.large)
             .animation(.easeInOut(duration: 0.3), value: showSavedFeedback)
+            .animation(.easeInOut(duration: 0.3), value: showGrowthPopup)
             .onAppear {
                 if selectedAccount == nil {
                     selectedAccount = accounts.first(where: { $0.isDefault }) ?? accounts.first
@@ -478,6 +490,10 @@ struct AddTransactionView: View {
         try? modelContext.save()
         WidgetDataSync.updateSnapshot(from: modelContext)
 
+        // 豆芽成長邏輯
+        let sproutService = SproutGrowthService(modelContext: modelContext)
+        let growthResult = sproutService.waterPlant()
+
         UINotificationFeedbackGenerator().notificationOccurred(.success)
 
         // 重置表單
@@ -494,6 +510,24 @@ struct AddTransactionView: View {
             withAnimation {
                 showSavedFeedback = false
             }
+            // 顯示豆芽成長動畫（在儲存動畫結束後）
+            if growthResult.didGrow {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    growthPointsEarned = growthResult.pointsEarned
+                    didStageUp = growthResult.newStage != nil
+                    if let stage = growthResult.newStage {
+                        newStageName = SproutPlant.stageNameFor(stage: stage)
+                    }
+                    withAnimation {
+                        showGrowthPopup = true
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                        withAnimation {
+                            showGrowthPopup = false
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -507,6 +541,37 @@ struct AddTransactionView: View {
             Text("已儲存")
                 .font(.headline)
                 .foregroundStyle(AppTheme.onBackground)
+        }
+        .padding(36)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: .black.opacity(0.1), radius: 20, y: 10)
+        .transition(.scale.combined(with: .opacity))
+    }
+
+    // MARK: - 豆芽成長動畫
+
+    private var growthOverlay: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "sparkles")
+                .font(.system(size: 48))
+                .foregroundStyle(AppTheme.primary)
+                .symbolEffect(.bounce, value: showGrowthPopup)
+
+            Text("豆芽獲得成長！")
+                .font(.headline)
+                .foregroundStyle(AppTheme.onBackground)
+
+            Text("+\(growthPointsEarned) 點")
+                .font(.title2.bold())
+                .foregroundStyle(AppTheme.primaryDark)
+
+            if didStageUp {
+                Text("豆芽成長為：\(newStageName)！")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppTheme.income)
+                    .padding(.top, 4)
+            }
         }
         .padding(36)
         .background(.ultraThinMaterial)

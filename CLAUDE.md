@@ -40,14 +40,22 @@ xcodebuild test -project personal_finance.xcodeproj -scheme personal_finance \
 - SwiftData 使用磁碟儲存（`isStoredInMemoryOnly: false`）
 
 ### 資料層
-- **三個 SwiftData Model**：`Transaction`、`Category`、`Account`，全部需在 schema 中註冊
+- **五個 SwiftData Model**：`Transaction`、`Category`、`Account`、`SproutPlant`、`HarvestRecord`，全部需在 schema 中註冊
 - `ModelContainer` 在 `personal_financeApp.swift` 建立並注入環境
 - App 啟動時透過 `DefaultCategories.seed()` 植入預設分類（8 支出 + 4 收入）與帳戶（3 個）
 - 金額使用 `Decimal` 型別確保精度，僅在 Charts 渲染時轉為 `Double`
 - 關聯：`Transaction -> Category`（多對一，nullify）、`Transaction -> Account`（多對一，nullify）
 
+### 豆芽養成功能
+- `SproutPlant`：當前培育中的豆芽，5 個成長階段（種子→發芽→小苗→茂盛→開花結果）
+- `HarvestRecord`：收成紀錄，用於圖鑑展示
+- `SproutGrowthService`：成長邏輯核心（每日記帳 +10 基礎點 + 連續天數 bonus）
+- 階段門檻：0 / 20 / 40 / 60 / 80 點
+- 記帳後自動澆灌，同一天多次記帳只觸發一次成長
+- 使用 SF Symbols + SwiftUI 原生動畫（未來可升級為 Lottie）
+
 ### UI 層
-- 根視圖 `ContentView` 使用 `TabView`（首頁/記帳/分析/設定），首次啟動顯示 `OnboardingView`
+- 根視圖 `ContentView` 使用 `TabView`（首頁/記帳/豆芽/分析/設定），首次啟動顯示 `OnboardingView`
 - 透過 `@Query` 取得資料，`@Environment(\.modelContext)` 執行寫入
 - 色彩方案透過 `@AppStorage("appColorScheme")` 控制，支援系統/淺色/深色切換
 - 主題定義在 `Theme/AppTheme.swift`，品牌色為綠色系（#8BC34A / #2E7D32）
