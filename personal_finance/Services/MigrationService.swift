@@ -1,3 +1,31 @@
+// ============================================================================
+// MARK: - MigrationService.swift
+// 模組：Services
+//
+// 功能說明：
+//   這個檔案定義了資料遷移服務，負責將舊版 App Group SQLite 資料庫或
+//   舊版 Application Support 目錄中的 SwiftData 資料，遷移至新的
+//   CloudKit 管理的資料儲存區。遷移過程透過 BackupService 進行序列化
+//   與反序列化，確保資料完整性。
+//
+// 主要職責：
+//   - 偵測是否需要進行 CloudKit 遷移（透過 UserDefaults 旗標）
+//   - 自動尋找舊版資料來源（App Group 或 Application Support）
+//   - 將舊資料匯出為備份格式，再匯入新的 ModelContext
+//   - 遷移完成後將舊資料庫重新命名為安全備份
+//
+// 關鍵屬性/方法：
+//   - migrationKey: UserDefaults 鍵值，記錄遷移是否已完成
+//   - needsMigration: Bool，判斷是否仍需執行遷移
+//   - migrateIfNeeded(to:): 主要遷移方法，讀取舊資料庫、匯出備份、
+//     匯入新 context，並將舊 .store / .store-wal / .store-shm 重新命名
+//
+// 注意事項：
+//   - 遷移失敗時不會標記為完成，下次啟動時會自動重試
+//   - 舊資料庫以唯讀模式開啟（allowsSave: false）
+//   - 同時處理 WAL 與 SHM 附屬檔案的搬移
+// ============================================================================
+
 import Foundation
 import SwiftData
 

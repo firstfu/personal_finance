@@ -1,3 +1,36 @@
+// ============================================================================
+// MARK: - WidgetDataSync.swift
+// 模組：Services
+//
+// 功能說明：
+//   這個檔案定義了 Widget 資料同步服務，負責從主 App 的 SwiftData 資料庫
+//   中擷取當月財務摘要，並將快照資料寫入 App Group 共享容器，供 Widget
+//   Extension 讀取顯示。
+//
+// 主要職責：
+//   - 查詢當月所有交易記錄，計算月收入/月支出/月結餘
+//   - 統計前三大支出分類及其佔比百分比
+//   - 擷取最近 5 筆交易記錄供 Widget 顯示
+//   - 擷取所有帳戶餘額摘要
+//   - 將快照資料序列化為 JSON 並寫入 App Group 共享目錄
+//   - 通知 WidgetCenter 重新載入所有時間線
+//
+// 關鍵方法：
+//   - updateSnapshot(from:): 主要同步方法，從 ModelContext 讀取資料、
+//     組裝 WidgetSnapshot、寫入 JSON 檔案並觸發 Widget 更新
+//
+// 關鍵屬性：
+//   - appGroupID: App Group 識別碼 "group.com.firstfu.personal-finance"
+//   - snapshotFileName: 快照檔案名稱 "widget_snapshot.json"
+//   - snapshotURL: 快照檔案在 App Group 容器中的完整路徑
+//
+// 注意事項：
+//   - 日期格式使用繁體中文地區設定（zh_TW），顯示月份為「X月」
+//   - 金額以 String 格式儲存於快照中，保留 Decimal 精度
+//   - 寫入檔案使用 .atomic 選項確保資料一致性
+//   - 若 App Group 容器無法存取，方法會靜默返回
+// ============================================================================
+
 import Foundation
 import SwiftData
 import WidgetKit

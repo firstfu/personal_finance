@@ -5,6 +5,43 @@
 //  Created by firstfu on 2026/2/17.
 //
 
+// ============================================================================
+// MARK: - AnalyticsView.swift
+// 模組：Views
+//
+// 功能說明：
+//   財務分析頁面，提供使用者視覺化的收支趨勢分析與分類佔比圖表。
+//   支援本週、本月、本年三種時間區間切換，透過折線圖與圓餅圖
+//   呈現財務資料的多維度分析。
+//
+// 主要職責：
+//   - 依選定期間篩選交易，計算總收入、總支出與淨額
+//   - 繪製收支累計趨勢折線圖（支援支出/收入/淨額三條線的開關切換）
+//   - 繪製支出分類與收入分類的互動式圓餅圖
+//   - 提供圖表互動功能（點選日期顯示詳細數據、點選扇形區顯示分類明細）
+//
+// UI 結構：
+//   - periodPicker: 期間選擇器（本週/本月/本年），使用 Segmented 樣式
+//   - spendingSummaryCard: 總支出、總收入與淨額摘要卡片
+//   - expenseTrendChart: 收支趨勢折線圖，含面積填充與互動選取標記
+//   - trendLineFilter: 趨勢圖篩選膠囊按鈕（支出/收入/淨額開關）
+//   - categoryBreakdown: 分類佔比區，包含支出圓餅圖與收入圓餅圖
+//   - pieChart(): 可複用的圓餅圖元件，支援中心顯示選取項目詳情
+//
+// 資料依賴：
+//   - @Query allTransactions: 全部交易紀錄，依日期降序排列
+//   - @State selectedPeriod: 當前選取的時間區間
+//   - @State selectedDate: 趨勢圖中選取的日期（用於 RuleMark 標記）
+//   - @State selectedCategoryAngle / selectedIncomeCategoryAngle: 圓餅圖選取角度
+//   - @State showExpenseLine / showIncomeLine / showNetLine: 趨勢線顯示開關
+//
+// 注意事項：
+//   - 趨勢圖資料為累計值（dailyExpenses/dailyIncomes/dailyNet），非單日金額
+//   - 金額在 Charts 渲染時透過 NSDecimalNumber 轉換為 Double
+//   - 至少須保留一條趨勢線處於開啟狀態（toggleLine 邏輯控制）
+//   - 圓餅圖使用 chartAngleSelection 實現互動，透過角度累計定位選取項
+// ============================================================================
+
 import SwiftUI
 import SwiftData
 import Charts
@@ -12,22 +49,19 @@ import Charts
 struct AnalyticsView: View {
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
 
-    @State private var selectedPeriod: Period = .month
+    @State private var periodState = TimePeriodState()
     @State private var selectedDate: Date?
     @State private var selectedCategoryAngle: Double?
     @State private var selectedIncomeCategoryAngle: Double?
-
-    enum Period: String, CaseIterable {
-        case week = "本週"
-        case month = "本月"
-        case year = "本年"
-    }
+    @State private var showExpenseLine: Bool = true
+    @State private var showIncomeLine: Bool = true
+    @State private var showNetLine: Bool = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: AppTheme.cardSpacing) {
-                    periodPicker
+                    PeriodNavigationBar(state: $periodState)
                     spendingSummaryCard
                     expenseTrendChart
                     categoryBreakdown
@@ -40,18 +74,8 @@ struct AnalyticsView: View {
     }
 
     private var filteredTransactions: [Transaction] {
-        let calendar = Calendar.current
-        let now = Date.now
-        let start: Date
-        switch selectedPeriod {
-        case .week:
-            start = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
-        case .month:
-            start = calendar.date(from: calendar.dateComponents([.year, .month], from: now))!
-        case .year:
-            start = calendar.date(from: calendar.dateComponents([.year], from: now))!
-        }
-        return allTransactions.filter { $0.date >= start }
+        let range = periodState.dateRange
+        return allTransactions.filter { $0.date >= range.start && $0.date < range.end }
     }
 
     private var expenses: [Transaction] {
@@ -68,15 +92,6 @@ struct AnalyticsView: View {
 
     private var totalIncome: Decimal {
         incomes.reduce(0) { $0 + $1.amount }
-    }
-
-    private var periodPicker: some View {
-        Picker("期間", selection: $selectedPeriod) {
-            ForEach(Period.allCases, id: \.self) { period in
-                Text(period.rawValue).tag(period)
-            }
-        }
-        .pickerStyle(.segmented)
     }
 
     private var spendingSummaryCard: some View {
@@ -126,63 +141,71 @@ struct AnalyticsView: View {
             Text("收支趨勢")
                 .font(.headline)
 
+            trendLineFilter
+
             if expenses.isEmpty && incomes.isEmpty {
                 Text("尚無資料")
                     .foregroundStyle(AppTheme.secondaryText)
                     .frame(maxWidth: .infinity, minHeight: 200)
             } else {
                 Chart {
-                    ForEach(dailyExpenses, id: \.date) { data in
-                        LineMark(
-                            x: .value("日期", data.date, unit: .day),
-                            y: .value("金額", data.total),
-                            series: .value("類型", "支出")
-                        )
-                        .foregroundStyle(AppTheme.expense)
-                        .interpolationMethod(.catmullRom)
+                    if showExpenseLine {
+                        ForEach(dailyExpenses, id: \.date) { data in
+                            LineMark(
+                                x: .value("日期", data.date, unit: .day),
+                                y: .value("金額", data.total),
+                                series: .value("類型", "支出")
+                            )
+                            .foregroundStyle(AppTheme.expense)
+                            .interpolationMethod(.catmullRom)
 
-                        AreaMark(
-                            x: .value("日期", data.date, unit: .day),
-                            y: .value("金額", data.total),
-                            series: .value("類型", "支出")
-                        )
-                        .foregroundStyle(AppTheme.expense.opacity(0.1))
-                        .interpolationMethod(.catmullRom)
+                            AreaMark(
+                                x: .value("日期", data.date, unit: .day),
+                                y: .value("金額", data.total),
+                                series: .value("類型", "支出")
+                            )
+                            .foregroundStyle(AppTheme.expense.opacity(0.1))
+                            .interpolationMethod(.catmullRom)
+                        }
                     }
 
-                    ForEach(dailyIncomes, id: \.date) { data in
-                        LineMark(
-                            x: .value("日期", data.date, unit: .day),
-                            y: .value("金額", data.total),
-                            series: .value("類型", "收入")
-                        )
-                        .foregroundStyle(AppTheme.income)
-                        .interpolationMethod(.catmullRom)
+                    if showIncomeLine {
+                        ForEach(dailyIncomes, id: \.date) { data in
+                            LineMark(
+                                x: .value("日期", data.date, unit: .day),
+                                y: .value("金額", data.total),
+                                series: .value("類型", "收入")
+                            )
+                            .foregroundStyle(AppTheme.income)
+                            .interpolationMethod(.catmullRom)
 
-                        AreaMark(
-                            x: .value("日期", data.date, unit: .day),
-                            y: .value("金額", data.total),
-                            series: .value("類型", "收入")
-                        )
-                        .foregroundStyle(AppTheme.income.opacity(0.1))
-                        .interpolationMethod(.catmullRom)
+                            AreaMark(
+                                x: .value("日期", data.date, unit: .day),
+                                y: .value("金額", data.total),
+                                series: .value("類型", "收入")
+                            )
+                            .foregroundStyle(AppTheme.income.opacity(0.1))
+                            .interpolationMethod(.catmullRom)
+                        }
                     }
 
-                    ForEach(dailyNet, id: \.date) { data in
-                        LineMark(
-                            x: .value("日期", data.date, unit: .day),
-                            y: .value("金額", data.total),
-                            series: .value("類型", "淨額")
-                        )
-                        .foregroundStyle(AppTheme.primary)
-                        .interpolationMethod(.catmullRom)
-                        .lineStyle(StrokeStyle(lineWidth: 2, dash: [6, 3]))
+                    if showNetLine {
+                        ForEach(dailyNet, id: \.date) { data in
+                            LineMark(
+                                x: .value("日期", data.date, unit: .day),
+                                y: .value("金額", data.total),
+                                series: .value("類型", "淨額")
+                            )
+                            .foregroundStyle(AppTheme.primary)
+                            .interpolationMethod(.catmullRom)
+                            .lineStyle(StrokeStyle(lineWidth: 2, dash: [6, 3]))
+                        }
                     }
 
                     if let selectedDate {
-                        let matchedExpense = dailyExpenses.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) })
-                        let matchedIncome = dailyIncomes.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) })
-                        let matchedNet = dailyNet.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) })
+                        let matchedExpense = showExpenseLine ? dailyExpenses.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }) : nil
+                        let matchedIncome = showIncomeLine ? dailyIncomes.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }) : nil
+                        let matchedNet = showNetLine ? dailyNet.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }) : nil
                         if let refDate = matchedExpense?.date ?? matchedIncome?.date ?? matchedNet?.date {
                             RuleMark(x: .value("日期", refDate, unit: .day))
                                 .foregroundStyle(.secondary.opacity(0.5))
@@ -226,11 +249,7 @@ struct AnalyticsView: View {
                 .chartYAxis {
                     AxisMarks(position: .leading)
                 }
-                .chartForegroundStyleScale([
-                    "支出": AppTheme.expense,
-                    "收入": AppTheme.income,
-                    "淨額": AppTheme.primary,
-                ])
+                .chartForegroundStyleScale(domain: activeTrendDomain, range: activeTrendRange)
             }
         }
         .padding(16)
@@ -238,13 +257,75 @@ struct AnalyticsView: View {
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
     }
 
+    private var activeLineCount: Int {
+        [showExpenseLine, showIncomeLine, showNetLine].filter { $0 }.count
+    }
+
+    private func toggleLine(_ line: inout Bool) {
+        if line && activeLineCount <= 1 { return }
+        line.toggle()
+    }
+
+    private var trendLineFilter: some View {
+        HStack(spacing: 8) {
+            trendFilterChip(label: "支出", color: AppTheme.expense, isOn: $showExpenseLine)
+            trendFilterChip(label: "收入", color: AppTheme.income, isOn: $showIncomeLine)
+            trendFilterChip(label: "淨額", color: AppTheme.primary, isOn: $showNetLine)
+        }
+    }
+
+    private func trendFilterChip(label: String, color: Color, isOn: Binding<Bool>) -> some View {
+        Button {
+            toggleLine(&isOn.wrappedValue)
+        } label: {
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(color)
+                    .frame(width: 8, height: 8)
+                Text(label)
+                    .font(.caption)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(isOn.wrappedValue ? color.opacity(0.15) : Color.clear)
+            .foregroundStyle(isOn.wrappedValue ? color : .secondary)
+            .overlay(
+                Capsule()
+                    .stroke(isOn.wrappedValue ? color : Color.secondary.opacity(0.3), lineWidth: 1)
+            )
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var activeTrendDomain: [String] {
+        var result: [String] = []
+        if showExpenseLine { result.append("支出") }
+        if showIncomeLine { result.append("收入") }
+        if showNetLine { result.append("淨額") }
+        return result
+    }
+
+    private var activeTrendRange: [Color] {
+        var result: [Color] = []
+        if showExpenseLine { result.append(AppTheme.expense) }
+        if showIncomeLine { result.append(AppTheme.income) }
+        if showNetLine { result.append(AppTheme.primary) }
+        return result
+    }
+
     private var dailyExpenses: [(date: Date, total: Double)] {
         let calendar = Calendar.current
         let grouped = Dictionary(grouping: expenses) { tx in
             calendar.startOfDay(for: tx.date)
         }
-        return grouped.map { (date: $0.key, total: NSDecimalNumber(decimal: $0.value.reduce(0) { $0 + $1.amount }).doubleValue) }
+        let daily = grouped.map { (date: $0.key, total: NSDecimalNumber(decimal: $0.value.reduce(0) { $0 + $1.amount }).doubleValue) }
             .sorted { $0.date < $1.date }
+        var cumulative: Double = 0
+        return daily.map { item in
+            cumulative += item.total
+            return (date: item.date, total: cumulative)
+        }
     }
 
     private var dailyIncomes: [(date: Date, total: Double)] {
@@ -252,8 +333,13 @@ struct AnalyticsView: View {
         let grouped = Dictionary(grouping: incomes) { tx in
             calendar.startOfDay(for: tx.date)
         }
-        return grouped.map { (date: $0.key, total: NSDecimalNumber(decimal: $0.value.reduce(0) { $0 + $1.amount }).doubleValue) }
+        let daily = grouped.map { (date: $0.key, total: NSDecimalNumber(decimal: $0.value.reduce(0) { $0 + $1.amount }).doubleValue) }
             .sorted { $0.date < $1.date }
+        var cumulative: Double = 0
+        return daily.map { item in
+            cumulative += item.total
+            return (date: item.date, total: cumulative)
+        }
     }
 
     private var dailyNet: [(date: Date, total: Double)] {
@@ -263,12 +349,17 @@ struct AnalyticsView: View {
         )
         let expenseByDay = Dictionary(grouping: expenses) { calendar.startOfDay(for: $0.date) }
         let incomeByDay = Dictionary(grouping: incomes) { calendar.startOfDay(for: $0.date) }
-        return allDates.map { date in
+        let daily = allDates.map { date in
             let inc = incomeByDay[date]?.reduce(Decimal.zero) { $0 + $1.amount } ?? .zero
             let exp = expenseByDay[date]?.reduce(Decimal.zero) { $0 + $1.amount } ?? .zero
             return (date: date, total: NSDecimalNumber(decimal: inc - exp).doubleValue)
         }
         .sorted { $0.date < $1.date }
+        var cumulative: Double = 0
+        return daily.map { item in
+            cumulative += item.total
+            return (date: item.date, total: cumulative)
+        }
     }
 
     private var categoryBreakdown: some View {

@@ -1,3 +1,42 @@
+// ============================================================================
+// MARK: - SettingsView.swift
+// 模組：Views
+//
+// 功能說明：
+//   應用程式設定頁面，提供外觀設定、帳戶管理、分類管理、
+//   資料匯出/匯入/重設等功能的統一入口。
+//
+// 主要職責：
+//   - 外觀模式切換（跟隨系統/淺色/深色）
+//   - 帳戶管理：列出所有帳戶、新增帳戶、編輯帳戶、滑動刪除帳戶
+//   - 分類管理：導航至 CategoryManagementView
+//   - 載入/移除範例資料（Toggle 控制 SampleDataGenerator）
+//   - 導航至備份與還原頁面（iCloudBackupView）
+//   - 匯出交易紀錄為 CSV 檔案並提供分享功能
+//   - 重設所有資料（含確認對話框），重設後重新植入預設分類與帳戶
+//
+// UI 結構：
+//   - Section「外觀」: Picker 選擇外觀模式
+//   - Section「帳戶管理」: ForEach 帳戶列表（含圖示、名稱、類型、餘額），底部「新增帳戶」按鈕
+//   - Section「分類」: NavigationLink 至分類管理頁面
+//   - Section「資料」: 範例資料開關、備份還原連結、CSV 匯出按鈕、重設按鈕
+//   - Section「關於」: 顯示版本號
+//   - Sheet: AccountFormView（新增/編輯帳戶）
+//   - Alert: 重設確認對話框
+//
+// 資料依賴：
+//   - @Environment(\.modelContext): 用於寫入與刪除資料
+//   - @Query accounts: 全部帳戶，依 sortOrder 排序
+//   - @Query allTransactions: 全部交易紀錄
+//   - @AppStorage("appColorScheme"): 外觀模式偏好
+//   - @AppStorage("showDemoData"): 範例資料顯示狀態
+//
+// 注意事項：
+//   - 預設帳戶（isDefault == true）無法被滑動刪除
+//   - 重設操作會刪除所有交易、帳戶、分類後重新植入預設資料
+//   - 資料變更後皆呼叫 WidgetDataSync.updateSnapshot 同步 Widget
+// ============================================================================
+
 import SwiftUI
 import SwiftData
 import WidgetKit

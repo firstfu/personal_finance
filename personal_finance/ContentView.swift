@@ -1,3 +1,23 @@
+// ============================================================================
+// MARK: - ContentView.swift
+// 模組：App 根視圖
+//
+// 功能說明：
+//   這個檔案定義了應用程式的根視圖，負責管理主要的 TabView 導航結構
+//   以及首次啟動時的 Onboarding 流程判斷。
+//
+// 主要職責：
+//   - 根據 hasCompletedOnboarding 狀態決定顯示 OnboardingView 或主畫面
+//   - 管理四個主要分頁：首頁（HomeView）、記帳（AddTransactionView）、
+//     分析（AnalyticsView）、設定（SettingsView）
+//   - 透過 @AppStorage 管理色彩模式偏好（系統/淺色/深色）
+//   - 處理 Deep Link（personalfinance:// scheme）導航至對應分頁
+//
+// 注意事項：
+//   - 色彩模式透過 preferredColorScheme 套用至整個視圖階層
+//   - TabView 的 tint 色彩使用 AppTheme.primaryDark 品牌色
+// ============================================================================
+
 import SwiftUI
 import SwiftData
 

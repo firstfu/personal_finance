@@ -1,3 +1,31 @@
+// ============================================================================
+// MARK: - SampleDataGenerator.swift
+// 模組：Models
+//
+// 功能說明：
+//   提供範例（Demo）交易資料的產生與清除功能。
+//   用於展示 App 功能或開發測試，所有範例資料皆標記 isDemoData = true。
+//
+// 主要職責：
+//   - 產生擬真的交易範例資料（涵蓋所有預設分類與帳戶）
+//   - 提供一鍵清除所有範例資料的功能
+//   - 確保範例資料涵蓋多種時間跨度（當天至 45 天前）
+//
+// 關鍵方法：
+//   - insertSampleData(into:): 插入範例資料至指定的 ModelContext
+//     包含 6 筆收入（薪資 x3、獎金 x1、投資 x1、其他 x1）
+//     以及 27 筆支出（飲食 x8、交通 x5、娛樂 x3、購物 x3、居住 x3、
+//     醫療 x2、教育 x2、其他 x1），共計 33 筆交易
+//   - removeSampleData(from:): 刪除所有 isDemoData == true 的交易記錄
+//   - insert(_:amount:type:cat:acc:note:date:): 私有輔助方法，建立單筆交易
+//
+// 注意事項：
+//   - insertSampleData 會先呼叫 removeSampleData 清除舊範例，避免重複
+//   - 範例資料依賴預設分類與帳戶已存在（需先執行 DefaultCategories.seed）
+//   - 分類與帳戶以名稱比對（非 seedIdentifier），若名稱變更可能匹配失敗
+//   - 金額以整數 Int 傳入，內部轉為 Decimal 儲存
+// ============================================================================
+
 import Foundation
 import SwiftData
 

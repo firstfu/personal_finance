@@ -1,3 +1,26 @@
+// ============================================================================
+// MARK: - personal_finance_Widget.swift
+// 模組：Widget
+//
+// 功能說明：
+//   這個檔案定義了 iOS Widget Extension 的核心結構，包含 Widget 資料模型、
+//   Timeline Provider、Entry View 路由以及 Widget 本體定義。
+//
+// 主要職責：
+//   - FinanceWidgetEntry：Widget 時間線條目資料模型，包含月收支摘要、
+//     分類排行、最近交易、帳戶餘額等資訊
+//   - FinanceTimelineProvider：提供 Widget 的 placeholder、snapshot 與
+//     timeline 資料，每 15 分鐘自動更新
+//   - personal_finance_WidgetEntryView：根據 Widget 尺寸（small/medium/large）
+//     路由至對應的子視圖
+//   - personal_finance_Widget：Widget 主體定義，設定顯示名稱與支援尺寸
+//
+// 注意事項：
+//   - 使用 StaticConfiguration，無需使用者自訂 Intent
+//   - placeholder 使用寫死的範例資料供預覽顯示
+//   - 支援三種尺寸：systemSmall、systemMedium、systemLarge
+// ============================================================================
+
 import WidgetKit
 import SwiftUI
 

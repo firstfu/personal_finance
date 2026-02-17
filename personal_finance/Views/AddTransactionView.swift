@@ -1,3 +1,43 @@
+// ============================================================================
+// MARK: - AddTransactionView.swift
+// 模組：Views
+//
+// 功能說明：
+//   新增交易（記帳）頁面，提供使用者輸入收入或支出交易的完整表單。
+//   支援選擇交易類型、帳戶、金額輸入、分類選取、日期與備註，
+//   儲存後顯示成功動畫回饋。
+//
+// 主要職責：
+//   - 提供支出/收入類型切換
+//   - 顯示帳戶選擇器（水平捲動膠囊按鈕），預設選取 isDefault 帳戶
+//   - 提供大字體金額輸入欄位（僅數字鍵盤）
+//   - 以 4 欄網格顯示分類選擇按鈕（依交易類型篩選）
+//   - 儲存交易至 SwiftData 並同步 Widget 資料快照
+//   - 儲存成功後重置表單並顯示「已儲存」覆蓋動畫
+//
+// UI 結構：
+//   - Picker（Segmented）: 支出/收入類型切換
+//   - accountSelector: 水平捲動的帳戶膠囊按鈕列
+//   - amountSection: 大字體金額輸入區，顏色隨交易類型變化
+//   - categoryGrid: 4 欄 LazyVGrid 分類圖示按鈕，選取時顯示外框
+//   - DatePicker: 日期選擇器（compact 樣式）
+//   - TextField: 備註輸入欄位（選填）
+//   - saveButton: 儲存按鈕，未填完必要欄位時禁用
+//   - savedOverlay: 儲存成功覆蓋層，含打勾圖示與「已儲存」文字
+//
+// 資料依賴：
+//   - @Environment(\.modelContext): 用於寫入交易資料
+//   - @Query categories: 全部分類，依 sortOrder 排序
+//   - @Query accounts: 全部帳戶，依 sortOrder 排序
+//   - @State selectedType / amountText / selectedCategory / selectedAccount / date / note
+//
+// 注意事項：
+//   - 切換交易類型時會清除已選分類（onChange）
+//   - canSave 驗證：金額 > 0 且已選分類與帳戶
+//   - 儲存後透過 WidgetDataSync.updateSnapshot 同步 Widget
+//   - 成功回饋動畫 1.5 秒後自動消失
+// ============================================================================
+
 import SwiftUI
 import SwiftData
 import WidgetKit

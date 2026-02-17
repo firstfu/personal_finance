@@ -1,3 +1,36 @@
+// ============================================================================
+// MARK: - BackupService.swift
+// 模組：Services
+//
+// 功能說明：
+//   這個檔案定義了備份與還原服務，提供將 SwiftData 資料匯出為 JSON
+//   備份檔案，以及從 JSON 備份檔案還原資料的完整功能。同時包含
+//   BackupFileDocument 結構，支援 SwiftUI 的 fileExporter/fileImporter。
+//
+// 主要職責：
+//   - 建立備份：將 Category、Account、Transaction 資料序列化為 BackupDocument
+//   - 載入備份：從 URL 讀取 JSON 檔案並解碼為 BackupDocument
+//   - 還原備份：將 BackupDocument 中的資料寫入 ModelContext（先清除再寫入）
+//   - 提供 FileDocument 協定實作，整合 SwiftUI 檔案匯出/匯入流程
+//
+// 關鍵方法：
+//   - createBackup(context:): 從 ModelContext 匯出所有資料，建立 ID 對映表
+//     以維持 Transaction 與 Category/Account 之間的關聯
+//   - loadBackup(from:): 從檔案 URL 讀取並解碼備份，含版本相容性檢查
+//   - restore(_:into:): 先刪除所有既有資料，再依序還原分類、帳戶、交易，
+//     透過 backupId 重建關聯關係
+//
+// 關鍵類型：
+//   - BackupFileDocument: 實作 FileDocument 協定，處理 JSON 編解碼
+//   - BackupService: 無狀態列舉，提供靜態備份/還原方法
+//
+// 注意事項：
+//   - 還原時會先刪除所有既有資料（Transaction、Category、Account）
+//   - 備份排除 isDemoData == true 的交易記錄
+//   - 金額以 String 格式儲存於 DTO 中，確保 Decimal 精度不流失
+//   - 日期使用 ISO 8601 格式編碼
+// ============================================================================
+
 import Foundation
 import SwiftData
 import UniformTypeIdentifiers

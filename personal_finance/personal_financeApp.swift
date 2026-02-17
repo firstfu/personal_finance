@@ -1,3 +1,25 @@
+// ============================================================================
+// MARK: - personal_financeApp.swift
+// 模組：App 進入點
+//
+// 功能說明：
+//   這個檔案定義了應用程式的主要進入點（@main），負責初始化 SwiftData
+//   ModelContainer、植入預設資料，以及設定 CloudKit 遠端變更監聽。
+//
+// 主要職責：
+//   - 建立並配置 SwiftData ModelContainer（含 CloudKit 私有資料庫）
+//   - 註冊所有 SwiftData Schema（Transaction、Category、Account）
+//   - 設定資料遷移計畫（FinanceMigrationPlan）
+//   - App 啟動時執行舊版 App Group 資料遷移（MigrationService）
+//   - 植入預設分類與帳戶（DefaultCategories.seed）
+//   - 同步 Widget 快照資料（WidgetDataSync）
+//   - 監聽 CloudKit 遠端變更通知以即時更新 Widget
+//
+// 注意事項：
+//   - ModelContainer 建立失敗會觸發 fatalError
+//   - 根視圖為 ContentView，透過 .modelContainer 注入資料容器
+// ============================================================================
+
 import SwiftUI
 import SwiftData
 import CoreData

@@ -5,6 +5,36 @@
 //  Created by firstfu on 2026/2/17.
 //
 
+// ============================================================================
+// MARK: - HomeView.swift
+// 模組：Views
+//
+// 功能說明：
+//   應用程式的首頁主畫面，作為使用者進入 App 後的第一個頁面。
+//   提供當月財務總覽、各帳戶餘額及最近交易紀錄的快速瀏覽。
+//
+// 主要職責：
+//   - 顯示問候語及當前日期（繁體中文格式）
+//   - 計算並展示當月收入、支出與餘額摘要
+//   - 列出所有帳戶的即時餘額與總淨值
+//   - 顯示最近 10 筆交易紀錄
+//
+// UI 結構：
+//   - greetingSection: 頂部問候區，顯示「嗨，你好」與日期，右側有通知鈴鐺圖示
+//   - MonthlySummaryCard: 本月餘額摘要卡片（收入/支出/餘額）
+//   - accountBalanceSection: 各帳戶餘額列表，底部顯示總淨值
+//   - recentTransactionsSection: 最近交易列表，使用 TransactionRow 元件呈現
+//
+// 資料依賴：
+//   - @Query allTransactions: 全部交易紀錄，依日期降序排列
+//   - @Query accounts: 全部帳戶，依 sortOrder 排序
+//
+// 注意事項：
+//   - monthlyTransactions 為 computed property，每次存取皆重新計算當月交易
+//   - 金額計算使用 Decimal 型別確保精度
+//   - 帳戶餘額為負數時以紅色（expense 色）顯示
+// ============================================================================
+
 import SwiftUI
 import SwiftData
 
@@ -93,6 +123,19 @@ struct HomeView: View {
                 }
                 .padding(.vertical, 2)
             }
+
+            Divider()
+
+            HStack {
+                Text("總淨值")
+                    .font(.headline)
+                Spacer()
+                let totalNetWorth = accounts.reduce(Decimal.zero) { $0 + $1.currentBalance }
+                Text(CurrencyFormatter.format(totalNetWorth))
+                    .font(.headline.bold().monospacedDigit())
+                    .foregroundStyle(totalNetWorth >= 0 ? AppTheme.income : AppTheme.expense)
+            }
+            .padding(.vertical, 2)
         }
     }
 
@@ -101,14 +144,14 @@ struct HomeView: View {
             Text("最近交易")
                 .font(.headline)
 
-            if monthlyTransactions.isEmpty {
+            if allTransactions.isEmpty {
                 Text("尚無交易紀錄")
                     .font(.subheadline)
                     .foregroundStyle(AppTheme.secondaryText)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 32)
             } else {
-                ForEach(Array(monthlyTransactions.prefix(10).enumerated()), id: \.element.id) { index, tx in
+                ForEach(Array(allTransactions.prefix(10).enumerated()), id: \.element.id) { index, tx in
                     if index > 0 {
                         Divider()
                     }
