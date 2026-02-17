@@ -59,6 +59,9 @@ struct personal_financeApp: App {
                     // One-time migration from old App Group store
                     MigrationService.migrateIfNeeded(to: context)
 
+                    // Clean up any duplicate seed data
+                    DefaultCategories.removeDuplicates(from: context)
+
                     // Seed defaults (dedup by seedIdentifier)
                     DefaultCategories.seed(into: context)
                     DefaultCategories.seedAccounts(into: context)

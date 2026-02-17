@@ -82,9 +82,9 @@ enum DefaultCategories {
                 colorHex: data.colorHex,
                 type: data.type,
                 sortOrder: data.sortOrder,
-                isDefault: true
+                isDefault: true,
+                seedIdentifier: data.seedIdentifier
             )
-            category.seedIdentifier = data.seedIdentifier
             context.insert(category)
         }
     }
@@ -116,10 +116,34 @@ enum DefaultCategories {
                 icon: data.icon,
                 colorHex: data.colorHex,
                 sortOrder: data.sortOrder,
-                isDefault: true
+                isDefault: true,
+                seedIdentifier: data.seedIdentifier
             )
-            account.seedIdentifier = data.seedIdentifier
             context.insert(account)
+        }
+    }
+
+    static func removeDuplicates(from context: ModelContext) {
+        let allCategories = (try? context.fetch(FetchDescriptor<Category>())) ?? []
+        var seenCategoryIds = Set<String>()
+        for category in allCategories {
+            guard !category.seedIdentifier.isEmpty else { continue }
+            if seenCategoryIds.contains(category.seedIdentifier) {
+                context.delete(category)
+            } else {
+                seenCategoryIds.insert(category.seedIdentifier)
+            }
+        }
+
+        let allAccounts = (try? context.fetch(FetchDescriptor<Account>())) ?? []
+        var seenAccountIds = Set<String>()
+        for account in allAccounts {
+            guard !account.seedIdentifier.isEmpty else { continue }
+            if seenAccountIds.contains(account.seedIdentifier) {
+                context.delete(account)
+            } else {
+                seenAccountIds.insert(account.seedIdentifier)
+            }
         }
     }
 }
