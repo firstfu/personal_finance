@@ -88,6 +88,12 @@ struct SettingsView: View {
 
                 // MARK: - 資料
                 Section("資料") {
+                    NavigationLink {
+                        iCloudBackupView()
+                    } label: {
+                        Label("iCloud 備份與還原", systemImage: "icloud.and.arrow.up")
+                    }
+
                     if let url = exportURL {
                         ShareLink(item: url) {
                             Label("分享匯出的 CSV", systemImage: "square.and.arrow.up")
