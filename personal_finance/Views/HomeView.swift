@@ -62,7 +62,7 @@ struct HomeView: View {
                 }
                 .padding(.horizontal, AppTheme.horizontalPadding)
             }
-            .background(Color(.secondarySystemBackground))
+            .background(Color(.systemBackground))
         }
     }
 
@@ -130,18 +130,8 @@ struct HomeView: View {
     private var accountBalanceSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Header
-            HStack {
-                Text("帳戶總覽")
-                    .font(.headline)
-                Spacer()
-                Button {
-                    // TODO: 導航到帳戶詳情頁
-                } label: {
-                    Text("查看全部")
-                        .font(.subheadline)
-                        .foregroundStyle(AppTheme.primary)
-                }
-            }
+            Text("帳戶總覽")
+                .font(.headline)
 
             // 按帳戶類型匯總
             ForEach(AccountType.allCases, id: \.self) { type in
@@ -190,18 +180,8 @@ struct HomeView: View {
     private var recentTransactionsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
-            HStack {
-                Text("最近交易")
-                    .font(.headline)
-                Spacer()
-                Button {
-                    // TODO: 導航到完整交易列表
-                } label: {
-                    Text("查看全部")
-                        .font(.subheadline)
-                        .foregroundStyle(AppTheme.primary)
-                }
-            }
+            Text("最近交易")
+                .font(.headline)
 
             if allTransactions.isEmpty {
                 Text("尚無交易紀錄")
