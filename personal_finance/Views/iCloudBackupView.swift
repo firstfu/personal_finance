@@ -1,132 +1,111 @@
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 struct iCloudBackupView: View {
     @Environment(\.modelContext) private var modelContext
 
-    @State private var isICloudAvailable = false
-    @State private var backups: [BackupFileInfo] = []
     @State private var isCreatingBackup = false
     @State private var isRestoring = false
-    @State private var lastBackupDate: Date?
+    @State private var exportDocument: BackupFileDocument?
+    @State private var showFileExporter = false
+    @State private var showFileImporter = false
+    @State private var showRestoreConfirmation = false
+    @State private var importedDocument: BackupDocument?
     @State private var errorMessage: String?
     @State private var showError = false
-    @State private var showRestoreConfirmation = false
-    @State private var selectedBackup: BackupFileInfo?
     @State private var showSuccessMessage = false
     @State private var successMessage = ""
 
     var body: some View {
         List {
-            // MARK: - Backup Section
+            // MARK: - iCloud 同步說明
             Section {
-                HStack {
-                    Image(systemName: isICloudAvailable ? "icloud.fill" : "icloud.slash")
-                        .foregroundStyle(isICloudAvailable ? .green : .secondary)
-                    Text(isICloudAvailable ? "iCloud 已連線" : "iCloud 未連線")
-                        .foregroundStyle(isICloudAvailable ? AppTheme.onBackground : .secondary)
-                }
-
-                if isICloudAvailable {
-                    Button {
-                        createBackup()
-                    } label: {
-                        HStack {
-                            Label("備份到 iCloud", systemImage: "icloud.and.arrow.up")
-                            Spacer()
-                            if isCreatingBackup {
-                                ProgressView()
-                            }
-                        }
-                    }
-                    .disabled(isCreatingBackup || isRestoring)
-
-                    if let date = lastBackupDate {
-                        HStack {
-                            Text("上次備份")
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                            Text(date, format: .dateTime.year().month().day().hour().minute().locale(Locale(identifier: "zh-TW")))
-                                .foregroundStyle(.secondary)
-                                .font(.caption)
-                        }
-                    }
-                } else {
-                    Text("請在「設定」中登入 iCloud 帳號並啟用 iCloud Drive，才能使用備份功能。")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            } header: {
-                Text("備份")
-            }
-
-            // MARK: - Backup List Section
-            if isICloudAvailable {
-                Section {
-                    if backups.isEmpty {
-                        Text("尚無備份檔案")
+                HStack(spacing: 12) {
+                    Image(systemName: "icloud.fill")
+                        .font(.title2)
+                        .foregroundStyle(.blue)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("iCloud 同步")
+                            .font(.headline)
+                        Text("資料會透過 iCloud 自動同步至你的所有裝置")
+                            .font(.caption)
                             .foregroundStyle(.secondary)
-                    } else {
-                        ForEach(backups) { backup in
-                            Button {
-                                selectedBackup = backup
-                                showRestoreConfirmation = true
-                            } label: {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(backup.createdAt, format: .dateTime.year().month().day().hour().minute().locale(Locale(identifier: "zh-TW")))
-                                        .foregroundStyle(AppTheme.onBackground)
-                                    HStack(spacing: 12) {
-                                        if let summary = backup.summary {
-                                            Text("\(summary.totalTransactions) 筆交易")
-                                            Text("\(summary.totalCategories) 分類")
-                                            Text("\(summary.totalAccounts) 帳戶")
-                                        }
-                                        Spacer()
-                                        Text(formatFileSize(backup.fileSize))
-                                    }
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                }
-                            }
-                            .disabled(isRestoring || isCreatingBackup)
-                        }
-                        .onDelete(perform: deleteBackups)
-                    }
-                } header: {
-                    Text("可用的備份")
-                } footer: {
-                    if !backups.isEmpty {
-                        Text("點擊備份檔案以還原，左滑可刪除。還原將取代所有現有資料。")
                     }
                 }
+                .padding(.vertical, 4)
+            }
+
+            // MARK: - 手動備份
+            Section {
+                // 匯出備份檔
+                Button {
+                    exportBackup()
+                } label: {
+                    HStack {
+                        Label("匯出備份檔", systemImage: "square.and.arrow.up")
+                        Spacer()
+                        if isCreatingBackup {
+                            ProgressView()
+                        }
+                    }
+                }
+                .disabled(isCreatingBackup || isRestoring)
+
+                // 匯入備份檔
+                Button {
+                    showFileImporter = true
+                } label: {
+                    HStack {
+                        Label("匯入備份檔", systemImage: "square.and.arrow.down")
+                        Spacer()
+                        if isRestoring {
+                            ProgressView()
+                        }
+                    }
+                }
+                .disabled(isCreatingBackup || isRestoring)
+            } header: {
+                Text("手動備份")
+            } footer: {
+                Text("匯出的備份檔可儲存到「檔案」App、iCloud Drive 或透過 AirDrop 分享。匯入時將取代所有現有資料。")
             }
         }
-        .navigationTitle("iCloud 備份與還原")
+        .navigationTitle("備份與還原")
         .navigationBarTitleDisplayMode(.inline)
-        .task {
-            checkICloudStatus()
-            if isICloudAvailable {
-                loadBackups()
+        .fileExporter(
+            isPresented: $showFileExporter,
+            document: exportDocument,
+            contentType: .json,
+            defaultFilename: backupFileName()
+        ) { result in
+            switch result {
+            case .success:
+                successMessage = "備份檔案已匯出！"
+                showSuccessMessage = true
+            case .failure(let error):
+                showError(error)
             }
+            exportDocument = nil
         }
-        .refreshable {
-            checkICloudStatus()
-            if isICloudAvailable {
-                loadBackups()
-            }
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [.json]
+        ) { result in
+            handleFileImport(result)
         }
         .alert("確認還原", isPresented: $showRestoreConfirmation) {
             Button("取消", role: .cancel) {
-                selectedBackup = nil
+                importedDocument = nil
             }
             Button("還原", role: .destructive) {
-                if let backup = selectedBackup {
-                    restoreBackup(backup)
+                if let doc = importedDocument {
+                    restoreBackup(doc)
                 }
             }
         } message: {
-            if let backup = selectedBackup, let summary = backup.summary {
-                Text("將還原 \(summary.totalTransactions) 筆交易、\(summary.totalCategories) 個分類和 \(summary.totalAccounts) 個帳戶。\n\n此操作會取代所有現有資料，且無法復原。")
+            if let doc = importedDocument {
+                Text("將還原 \(doc.summary.totalTransactions) 筆交易、\(doc.summary.totalCategories) 個分類和 \(doc.summary.totalAccounts) 個帳戶。\n\n此操作會取代所有現有資料，且無法復原。")
             } else {
                 Text("此操作會取代所有現有資料，且無法復原。確定要還原嗎？")
             }
@@ -147,29 +126,13 @@ struct iCloudBackupView: View {
 
     // MARK: - Actions
 
-    private func checkICloudStatus() {
-        isICloudAvailable = BackupService.isICloudAvailable()
-    }
-
-    private func loadBackups() {
-        do {
-            backups = try BackupService.listBackups()
-            lastBackupDate = backups.first?.createdAt
-        } catch {
-            showError(error)
-        }
-    }
-
-    private func createBackup() {
+    private func exportBackup() {
         isCreatingBackup = true
-        // Use Task to allow UI to update before potentially blocking operation
         Task {
             do {
                 let document = try BackupService.createBackup(context: modelContext)
-                _ = try BackupService.saveToICloud(document)
-                loadBackups()
-                successMessage = "備份完成！"
-                showSuccessMessage = true
+                exportDocument = BackupFileDocument(document: document)
+                showFileExporter = true
             } catch {
                 showError(error)
             }
@@ -177,11 +140,34 @@ struct iCloudBackupView: View {
         }
     }
 
-    private func restoreBackup(_ backup: BackupFileInfo) {
+    private func handleFileImport(_ result: Result<URL, Error>) {
+        switch result {
+        case .success(let url):
+            guard url.startAccessingSecurityScopedResource() else {
+                showError(BackupError.fileReadFailed(
+                    NSError(domain: "iCloudBackupView", code: -1,
+                            userInfo: [NSLocalizedDescriptionKey: "無法存取所選檔案"])
+                ))
+                return
+            }
+            defer { url.stopAccessingSecurityScopedResource() }
+
+            do {
+                let document = try BackupService.loadBackup(from: url)
+                importedDocument = document
+                showRestoreConfirmation = true
+            } catch {
+                showError(error)
+            }
+        case .failure(let error):
+            showError(error)
+        }
+    }
+
+    private func restoreBackup(_ document: BackupDocument) {
         isRestoring = true
         Task {
             do {
-                let document = try BackupService.loadBackup(from: backup.url)
                 try BackupService.restore(document, into: modelContext)
                 successMessage = "還原完成！已還原 \(document.summary.totalTransactions) 筆交易。"
                 showSuccessMessage = true
@@ -189,22 +175,8 @@ struct iCloudBackupView: View {
                 showError(error)
             }
             isRestoring = false
-            selectedBackup = nil
+            importedDocument = nil
         }
-    }
-
-    private func deleteBackups(at offsets: IndexSet) {
-        for index in offsets {
-            let backup = backups[index]
-            do {
-                try BackupService.deleteBackup(at: backup.url)
-            } catch {
-                showError(error)
-                return
-            }
-        }
-        backups.remove(atOffsets: offsets)
-        lastBackupDate = backups.first?.createdAt
     }
 
     private func showError(_ error: Error) {
@@ -214,9 +186,9 @@ struct iCloudBackupView: View {
 
     // MARK: - Helpers
 
-    private func formatFileSize(_ bytes: Int64) -> String {
-        let formatter = ByteCountFormatter()
-        formatter.countStyle = .file
-        return formatter.string(fromByteCount: bytes)
+    private func backupFileName() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd_HHmmss"
+        return "記帳備份_\(formatter.string(from: .now)).json"
     }
 }

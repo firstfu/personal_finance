@@ -250,7 +250,7 @@ struct AnalyticsView: View {
             } else {
                 Chart(categoryData, id: \.name) { item in
                     SectorMark(
-                        angle: .value("金額", item.total),
+                        angle: .value("金額", NSDecimalNumber(decimal: item.total).doubleValue),
                         innerRadius: .ratio(0.5),
                         angularInset: 1
                     )
@@ -305,11 +305,9 @@ struct AnalyticsView: View {
     private var selectedCategoryName: String? {
         guard let selectedCategoryAngle else { return nil }
         var cumulative: Double = 0
-        let totalDouble = NSDecimalNumber(decimal: totalExpense).doubleValue
-        guard totalDouble > 0 else { return nil }
         for item in categoryData {
-            let itemAngle = NSDecimalNumber(decimal: item.total).doubleValue / totalDouble
-            cumulative += itemAngle
+            let itemValue = NSDecimalNumber(decimal: item.total).doubleValue
+            cumulative += itemValue
             if selectedCategoryAngle <= cumulative {
                 return item.name
             }

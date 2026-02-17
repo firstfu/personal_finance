@@ -1,30 +1,55 @@
 import Foundation
 import SwiftData
+import UniformTypeIdentifiers
+import SwiftUI
+
+// MARK: - BackupFileDocument for fileExporter/fileImporter
+
+struct BackupFileDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.json] }
+
+    let document: BackupDocument
+
+    init(document: BackupDocument) {
+        self.document = document
+    }
+
+    init(configuration: ReadConfiguration) throws {
+        guard let data = configuration.file.regularFileContents else {
+            throw BackupError.fileReadFailed(
+                NSError(domain: "BackupFileDocument", code: -1,
+                        userInfo: [NSLocalizedDescriptionKey: "無法讀取檔案內容"])
+            )
+        }
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        do {
+            document = try decoder.decode(BackupDocument.self, from: data)
+        } catch {
+            throw BackupError.decodingFailed(error)
+        }
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        let data = try encoder.encode(document)
+        return FileWrapper(regularFileWithContents: data)
+    }
+}
+
+// MARK: - BackupService
 
 enum BackupService {
     private static let currentVersion = 1
-    private static let backupDirectoryName = "Backups"
-    private static let containerIdentifier = "iCloud.com.firstfu.com.personal-finance"
-
-    // MARK: - iCloud Availability
-
-    static func isICloudAvailable() -> Bool {
-        FileManager.default.ubiquityIdentityToken != nil
-    }
-
-    static func iCloudBackupDirectory() -> URL? {
-        guard let containerURL = FileManager.default.url(forUbiquityContainerIdentifier: containerIdentifier) else {
-            return nil
-        }
-        return containerURL.appendingPathComponent("Documents").appendingPathComponent(backupDirectoryName)
-    }
 
     // MARK: - Create Backup
 
     static func createBackup(context: ModelContext) throws -> BackupDocument {
         let categoryDescriptor = FetchDescriptor<Category>(sortBy: [SortDescriptor(\.sortOrder)])
         let accountDescriptor = FetchDescriptor<Account>(sortBy: [SortDescriptor(\.sortOrder)])
-        var transactionDescriptor = FetchDescriptor<Transaction>(
+        let transactionDescriptor = FetchDescriptor<Transaction>(
             predicate: #Predicate<Transaction> { $0.isDemoData == false },
             sortBy: [SortDescriptor(\.date)]
         )
@@ -107,103 +132,9 @@ enum BackupService {
         )
     }
 
-    // MARK: - Save to iCloud
-
-    static func saveToICloud(_ document: BackupDocument) throws -> URL {
-        guard let directory = iCloudBackupDirectory() else {
-            throw BackupError.iCloudNotAvailable
-        }
-
-        // Create directory if needed
-        let fileManager = FileManager.default
-        if !fileManager.fileExists(atPath: directory.path) {
-            do {
-                try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
-            } catch {
-                throw BackupError.directoryCreationFailed
-            }
-        }
-
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-
-        let data: Data
-        do {
-            data = try encoder.encode(document)
-        } catch {
-            throw BackupError.encodingFailed(error)
-        }
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd_HHmmss"
-        let fileName = "Backup_\(formatter.string(from: document.createdAt)).json"
-        let fileURL = directory.appendingPathComponent(fileName)
-
-        do {
-            try data.write(to: fileURL, options: .atomic)
-        } catch {
-            throw BackupError.fileWriteFailed(error)
-        }
-
-        return fileURL
-    }
-
-    // MARK: - List Backups
-
-    static func listBackups() throws -> [BackupFileInfo] {
-        guard let directory = iCloudBackupDirectory() else {
-            throw BackupError.iCloudNotAvailable
-        }
-
-        let fileManager = FileManager.default
-        guard fileManager.fileExists(atPath: directory.path) else {
-            return []
-        }
-
-        let contents: [URL]
-        do {
-            contents = try fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.fileSizeKey, .creationDateKey])
-        } catch {
-            throw BackupError.fileReadFailed(error)
-        }
-
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-
-        return contents
-            .filter { $0.pathExtension == "json" }
-            .compactMap { url -> BackupFileInfo? in
-                let attributes = try? fileManager.attributesOfItem(atPath: url.path)
-                let fileSize = attributes?[.size] as? Int64 ?? 0
-                let creationDate = attributes?[.creationDate] as? Date ?? .now
-
-                // Try to read summary from file
-                var summary: BackupSummary? = nil
-                if let data = try? Data(contentsOf: url),
-                   let doc = try? decoder.decode(BackupDocument.self, from: data) {
-                    summary = doc.summary
-                }
-
-                return BackupFileInfo(
-                    url: url,
-                    fileName: url.lastPathComponent,
-                    fileSize: fileSize,
-                    createdAt: creationDate,
-                    summary: summary
-                )
-            }
-            .sorted { $0.createdAt > $1.createdAt }
-    }
-
-    // MARK: - Load Backup
+    // MARK: - Load Backup from URL (for fileImporter)
 
     static func loadBackup(from url: URL) throws -> BackupDocument {
-        let fileManager = FileManager.default
-        guard fileManager.fileExists(atPath: url.path) else {
-            throw BackupError.fileNotFound
-        }
-
         let data: Data
         do {
             data = try Data(contentsOf: url)
@@ -287,16 +218,6 @@ enum BackupService {
             throw error
         } catch {
             throw BackupError.restoreFailed(error)
-        }
-    }
-
-    // MARK: - Delete Backup
-
-    static func deleteBackup(at url: URL) throws {
-        do {
-            try FileManager.default.removeItem(at: url)
-        } catch {
-            throw BackupError.deleteFailed(error)
         }
     }
 }

@@ -46,12 +46,3 @@ struct TransactionDTO: Codable {
     let date: Date
     let createdAt: Date
 }
-
-struct BackupFileInfo: Identifiable {
-    let id = UUID()
-    let url: URL
-    let fileName: String
-    let fileSize: Int64
-    let createdAt: Date
-    let summary: BackupSummary?
-}

@@ -91,7 +91,7 @@ struct SettingsView: View {
                     NavigationLink {
                         iCloudBackupView()
                     } label: {
-                        Label("iCloud 備份與還原", systemImage: "icloud.and.arrow.up")
+                        Label("備份與還原", systemImage: "externaldrive.fill")
                     }
 
                     if let url = exportURL {
