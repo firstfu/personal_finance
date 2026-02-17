@@ -28,7 +28,7 @@ struct HomeView: View {
                 }
                 .padding(.horizontal, AppTheme.horizontalPadding)
             }
-            .background(Color(.systemBackground))
+            .background(Color(.secondarySystemBackground))
         }
     }
 
@@ -71,7 +71,10 @@ struct HomeView: View {
             Text("帳戶餘額")
                 .font(.headline)
 
-            ForEach(accounts) { account in
+            ForEach(Array(accounts.enumerated()), id: \.element.id) { index, account in
+                if index > 0 {
+                    Divider()
+                }
                 HStack(spacing: 12) {
                     ZStack {
                         Circle()
@@ -105,7 +108,10 @@ struct HomeView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 32)
             } else {
-                ForEach(monthlyTransactions.prefix(10)) { tx in
+                ForEach(Array(monthlyTransactions.prefix(10).enumerated()), id: \.element.id) { index, tx in
+                    if index > 0 {
+                        Divider()
+                    }
                     TransactionRow(transaction: tx)
                 }
             }
