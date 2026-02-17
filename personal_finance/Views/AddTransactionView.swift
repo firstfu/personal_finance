@@ -1,20 +1,15 @@
-//
-//  AddTransactionView.swift
-//  personal_finance
-//
-//  Created by firstfu on 2026/2/17.
-//
-
 import SwiftUI
 import SwiftData
 
 struct AddTransactionView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Category.sortOrder) private var categories: [Category]
+    @Query(sort: \Account.sortOrder) private var accounts: [Account]
 
     @State private var selectedType: TransactionType = .expense
     @State private var amountText = ""
     @State private var selectedCategory: Category?
+    @State private var selectedAccount: Account?
     @State private var date = Date.now
     @State private var note = ""
     @State private var showSavedFeedback = false
@@ -24,37 +19,80 @@ struct AddTransactionView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    Picker("類型", selection: $selectedType) {
-                        Text("支出").tag(TransactionType.expense)
-                        Text("收入").tag(TransactionType.income)
+        ZStack {
+            NavigationStack {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        Picker("類型", selection: $selectedType) {
+                            Text("支出").tag(TransactionType.expense)
+                            Text("收入").tag(TransactionType.income)
+                        }
+                        .pickerStyle(.segmented)
+                        .onChange(of: selectedType) {
+                            selectedCategory = nil
+                        }
+
+                        accountSelector
+                        amountSection
+                        categoryGrid
+
+                        DatePicker("日期", selection: $date, displayedComponents: .date)
+                            .datePickerStyle(.compact)
+                            .padding(.horizontal, 4)
+
+                        TextField("備註（選填）", text: $note)
+                            .textFieldStyle(.roundedBorder)
+
+                        saveButton
                     }
-                    .pickerStyle(.segmented)
-                    .onChange(of: selectedType) {
-                        selectedCategory = nil
-                    }
-
-                    amountSection
-                    categoryGrid
-
-                    DatePicker("日期", selection: $date, displayedComponents: .date)
-                        .datePickerStyle(.compact)
-                        .padding(.horizontal, 4)
-
-                    TextField("備註（選填）", text: $note)
-                        .textFieldStyle(.roundedBorder)
-
-                    saveButton
+                    .padding(.horizontal, AppTheme.horizontalPadding)
+                    .padding(.top, 8)
                 }
-                .padding(.horizontal, AppTheme.horizontalPadding)
-                .padding(.top, 8)
+                .navigationTitle("記帳")
             }
-            .navigationTitle("記帳")
-            .overlay {
-                if showSavedFeedback {
-                    savedOverlay
+
+            if showSavedFeedback {
+                Color.black.opacity(0.2)
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+                savedOverlay
+            }
+        }
+        .animation(.easeInOut, value: showSavedFeedback)
+        .onAppear {
+            if selectedAccount == nil {
+                selectedAccount = accounts.first(where: { $0.isDefault }) ?? accounts.first
+            }
+        }
+    }
+
+    private var accountSelector: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("帳戶")
+                .font(AppTheme.captionFont)
+                .foregroundStyle(AppTheme.secondaryText)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(accounts) { account in
+                        let isSelected = selectedAccount?.id == account.id
+                        Button {
+                            selectedAccount = account
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: account.icon)
+                                    .font(.caption)
+                                Text(account.name)
+                                    .font(.subheadline)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(isSelected ? AppTheme.primaryDark : AppTheme.surface)
+                            .foregroundStyle(isSelected ? .white : AppTheme.onBackground)
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             }
         }
@@ -130,7 +168,7 @@ struct AddTransactionView: View {
 
     private var canSave: Bool {
         guard let amount = Decimal(string: amountText), amount > 0 else { return false }
-        return selectedCategory != nil
+        return selectedCategory != nil && selectedAccount != nil
     }
 
     private func saveTransaction() {
@@ -139,10 +177,12 @@ struct AddTransactionView: View {
             amount: amount,
             type: selectedType,
             category: selectedCategory,
+            account: selectedAccount,
             note: note,
             date: date
         )
         modelContext.insert(transaction)
+        try? modelContext.save()
 
         amountText = ""
         selectedCategory = nil

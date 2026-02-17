@@ -1,20 +1,16 @@
-//
-//  AppTheme.swift
-//  personal_finance
-//
-//  Created by firstfu on 2026/2/17.
-//
-
 import SwiftUI
 
 enum AppTheme {
+    // Brand colors (fixed, don't change with dark mode)
     static let primary = Color(hex: "#8BC34A")
     static let primaryDark = Color(hex: "#2E7D32")
-    static let surface = Color(hex: "#F5F5F5")
-    static let onBackground = Color(hex: "#1A1A1A")
-    static let secondaryText = Color(hex: "#757575")
     static let income = Color(hex: "#4CAF50")
     static let expense = Color(hex: "#E53935")
+
+    // Semantic colors (adapt to dark mode automatically)
+    static let surface = Color(.secondarySystemBackground)
+    static let onBackground = Color(.label)
+    static let secondaryText = Color(.secondaryLabel)
 
     static let primaryGradient = LinearGradient(
         colors: [primary, primaryDark],

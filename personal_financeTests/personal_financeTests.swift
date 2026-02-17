@@ -48,3 +48,19 @@ struct TransactionTests {
         #expect(tx.category?.name == "飲食")
     }
 }
+
+struct AccountTests {
+    @Test func accountInitialization() async throws {
+        let account = Account(name: "現金", type: .cash, icon: "banknote.fill", colorHex: "#4CAF50", initialBalance: 10000)
+        #expect(account.name == "現金")
+        #expect(account.type == .cash)
+        #expect(account.initialBalance == 10000)
+    }
+
+    @Test func accountTypeDisplayName() async throws {
+        #expect(AccountType.cash.displayName == "現金")
+        #expect(AccountType.bank.displayName == "銀行存款")
+        #expect(AccountType.creditCard.displayName == "信用卡")
+        #expect(AccountType.eWallet.displayName == "電子支付")
+    }
+}

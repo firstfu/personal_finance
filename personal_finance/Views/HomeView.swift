@@ -11,6 +11,7 @@ import SwiftData
 struct HomeView: View {
     @Query(sort: \Transaction.date, order: .reverse)
     private var allTransactions: [Transaction]
+    @Query(sort: \Account.sortOrder) private var accounts: [Account]
 
     var body: some View {
         NavigationStack {
@@ -22,6 +23,7 @@ struct HomeView: View {
                         totalIncome: totalIncome,
                         totalExpense: totalExpense
                     )
+                    accountBalanceSection
                     recentTransactionsSection
                 }
                 .padding(.horizontal, AppTheme.horizontalPadding)
@@ -62,6 +64,33 @@ struct HomeView: View {
                 .foregroundStyle(AppTheme.secondaryText)
         }
         .padding(.top, 8)
+    }
+
+    private var accountBalanceSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("帳戶餘額")
+                .font(.headline)
+
+            ForEach(accounts) { account in
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(Color(hex: account.colorHex).opacity(0.15))
+                            .frame(width: 36, height: 36)
+                        Image(systemName: account.icon)
+                            .font(.body)
+                            .foregroundStyle(Color(hex: account.colorHex))
+                    }
+                    Text(account.name)
+                        .font(.body)
+                    Spacer()
+                    Text(CurrencyFormatter.format(account.currentBalance))
+                        .font(.body.bold().monospacedDigit())
+                        .foregroundStyle(account.currentBalance >= 0 ? AppTheme.onBackground : AppTheme.expense)
+                }
+                .padding(.vertical, 2)
+            }
+        }
     }
 
     private var recentTransactionsSection: some View {

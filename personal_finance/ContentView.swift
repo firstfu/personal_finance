@@ -1,22 +1,27 @@
-//
-//  ContentView.swift
-//  personal_finance
-//
-//  Created by firstfu on 2026/2/17.
-//
-
 import SwiftUI
 import SwiftData
 
 struct ContentView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("appColorScheme") private var appColorScheme = "system"
+
+    private var colorScheme: ColorScheme? {
+        switch appColorScheme {
+        case "light": return .light
+        case "dark": return .dark
+        default: return nil
+        }
+    }
 
     var body: some View {
-        if hasCompletedOnboarding {
-            mainTabView
-        } else {
-            OnboardingView()
+        Group {
+            if hasCompletedOnboarding {
+                mainTabView
+            } else {
+                OnboardingView()
+            }
         }
+        .preferredColorScheme(colorScheme)
     }
 
     private var mainTabView: some View {
@@ -47,5 +52,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [Transaction.self, Category.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, Category.self, Account.self], inMemory: true)
 }

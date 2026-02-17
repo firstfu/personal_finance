@@ -41,6 +41,11 @@ struct TransactionRow: View {
                 Text(transaction.date, format: .dateTime.month().day())
                     .font(.caption)
                     .foregroundStyle(AppTheme.secondaryText)
+                if let accountName = transaction.account?.name {
+                    Text(accountName)
+                        .font(.caption2)
+                        .foregroundStyle(AppTheme.secondaryText)
+                }
             }
         }
         .padding(.vertical, 4)

@@ -54,4 +54,36 @@ enum DefaultCategories {
             context.insert(category)
         }
     }
+
+    struct AccountData {
+        let name: String
+        let type: AccountType
+        let icon: String
+        let colorHex: String
+        let sortOrder: Int
+    }
+
+    static let defaultAccounts: [AccountData] = [
+        .init(name: "現金", type: .cash, icon: "banknote.fill", colorHex: "#4CAF50", sortOrder: 0),
+        .init(name: "銀行存款", type: .bank, icon: "building.columns.fill", colorHex: "#2196F3", sortOrder: 1),
+        .init(name: "信用卡", type: .creditCard, icon: "creditcard.fill", colorHex: "#FF9800", sortOrder: 2),
+    ]
+
+    static func seedAccounts(into context: ModelContext) {
+        let descriptor = FetchDescriptor<Account>()
+        let count = (try? context.fetchCount(descriptor)) ?? 0
+        guard count == 0 else { return }
+
+        for data in defaultAccounts {
+            let account = Account(
+                name: data.name,
+                type: data.type,
+                icon: data.icon,
+                colorHex: data.colorHex,
+                sortOrder: data.sortOrder,
+                isDefault: true
+            )
+            context.insert(account)
+        }
+    }
 }

@@ -1,10 +1,3 @@
-//
-//  personal_financeApp.swift
-//  personal_finance
-//
-//  Created by firstfu on 2026/2/17.
-//
-
 import SwiftUI
 import SwiftData
 
@@ -14,6 +7,7 @@ struct personal_financeApp: App {
         let schema = Schema([
             Transaction.self,
             Category.self,
+            Account.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -28,7 +22,9 @@ struct personal_financeApp: App {
         WindowGroup {
             ContentView()
                 .onAppear {
-                    DefaultCategories.seed(into: sharedModelContainer.mainContext)
+                    let context = sharedModelContainer.mainContext
+                    DefaultCategories.seed(into: context)
+                    DefaultCategories.seedAccounts(into: context)
                 }
         }
         .modelContainer(sharedModelContainer)
