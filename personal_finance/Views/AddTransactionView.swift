@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct AddTransactionView: View {
     @Environment(\.modelContext) private var modelContext
@@ -183,6 +184,7 @@ struct AddTransactionView: View {
         )
         modelContext.insert(transaction)
         try? modelContext.save()
+        WidgetCenter.shared.reloadAllTimelines()
 
         amountText = ""
         selectedCategory = nil

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -185,6 +186,7 @@ struct SettingsView: View {
                 modelContext.delete(category)
             }
         }
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func deleteAccounts(offsets: IndexSet) {
@@ -194,6 +196,7 @@ struct SettingsView: View {
                 modelContext.delete(account)
             }
         }
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func resetAllData() {
@@ -210,6 +213,7 @@ struct SettingsView: View {
         // Re-seed defaults
         DefaultCategories.seed(into: modelContext)
         DefaultCategories.seedAccounts(into: modelContext)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 }
 
