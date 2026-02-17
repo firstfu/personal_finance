@@ -133,7 +133,6 @@ struct personal_finance_Widget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: FinanceTimelineProvider()) { entry in
             personal_finance_WidgetEntryView(entry: entry)
-                .containerBackground(.clear, for: .widget)
         }
         .configurationDisplayName("月收支摘要")
         .description("查看本月收入、支出和餘額")
