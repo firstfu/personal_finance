@@ -54,7 +54,7 @@ struct HomeView: View {
                 Text("嗨，你好")
                     .font(AppTheme.titleFont)
                     .foregroundStyle(AppTheme.onBackground)
-                Text(Date.now, format: .dateTime.year().month().day().weekday(.wide))
+                Text(Date.now, format: .dateTime.year().month().day().weekday(.wide).locale(Locale(identifier: "zh-TW")))
                     .font(AppTheme.captionFont)
                     .foregroundStyle(AppTheme.secondaryText)
             }

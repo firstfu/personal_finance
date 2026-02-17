@@ -16,6 +16,7 @@ final class Category {
     var type: TransactionType = TransactionType.expense
     var sortOrder: Int = 0
     var isDefault: Bool = false
+    var seedIdentifier: String = ""
 
     @Relationship(deleteRule: .nullify, inverse: \Transaction.category)
     var transactions: [Transaction]? = []

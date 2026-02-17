@@ -46,7 +46,7 @@ struct iCloudBackupView: View {
                             Text("上次備份")
                                 .foregroundStyle(.secondary)
                             Spacer()
-                            Text(date, format: .dateTime.year().month().day().hour().minute())
+                            Text(date, format: .dateTime.year().month().day().hour().minute().locale(Locale(identifier: "zh-TW")))
                                 .foregroundStyle(.secondary)
                                 .font(.caption)
                         }
@@ -73,7 +73,7 @@ struct iCloudBackupView: View {
                                 showRestoreConfirmation = true
                             } label: {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(backup.createdAt, format: .dateTime.year().month().day().hour().minute())
+                                    Text(backup.createdAt, format: .dateTime.year().month().day().hour().minute().locale(Locale(identifier: "zh-TW")))
                                         .foregroundStyle(AppTheme.onBackground)
                                     HStack(spacing: 12) {
                                         if let summary = backup.summary {

@@ -184,7 +184,7 @@ struct AddTransactionView: View {
         )
         modelContext.insert(transaction)
         try? modelContext.save()
-        WidgetCenter.shared.reloadAllTimelines()
+        WidgetDataSync.updateSnapshot(from: modelContext)
 
         amountText = ""
         selectedCategory = nil

@@ -72,6 +72,6 @@ struct CategoryManagementView: View {
                 modelContext.delete(category)
             }
         }
-        WidgetCenter.shared.reloadAllTimelines()
+        WidgetDataSync.updateSnapshot(from: modelContext)
     }
 }

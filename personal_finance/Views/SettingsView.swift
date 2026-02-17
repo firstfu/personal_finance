@@ -85,7 +85,7 @@ struct SettingsView: View {
                         } else {
                             SampleDataGenerator.removeSampleData(from: modelContext)
                         }
-                        WidgetCenter.shared.reloadAllTimelines()
+                        WidgetDataSync.updateSnapshot(from: modelContext)
                     }
 
                     NavigationLink {
@@ -147,7 +147,7 @@ struct SettingsView: View {
                 modelContext.delete(account)
             }
         }
-        WidgetCenter.shared.reloadAllTimelines()
+        WidgetDataSync.updateSnapshot(from: modelContext)
     }
 
     private func resetAllData() {
@@ -169,6 +169,6 @@ struct SettingsView: View {
         // Re-seed defaults
         DefaultCategories.seed(into: modelContext)
         DefaultCategories.seedAccounts(into: modelContext)
-        WidgetCenter.shared.reloadAllTimelines()
+        WidgetDataSync.updateSnapshot(from: modelContext)
     }
 }

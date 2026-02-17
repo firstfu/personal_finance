@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import CoreData
 import WidgetKit
 
 @main
@@ -11,37 +12,17 @@ struct personal_financeApp: App {
             Account.self,
         ])
 
-        let appGroupURL = FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: "group.com.firstfu.personal-finance")!
-            .appending(path: "default.store")
-
-        // Migrate existing data from old location if needed
-        let oldURL = URL.applicationSupportDirectory
-            .appending(path: "default.store")
-        if FileManager.default.fileExists(atPath: oldURL.path())
-            && !FileManager.default.fileExists(atPath: appGroupURL.path()) {
-            try? FileManager.default.copyItem(at: oldURL, to: appGroupURL)
-            // Also copy WAL and SHM files if they exist
-            let walURL = oldURL.deletingPathExtension().appendingPathExtension("store-wal")
-            let shmURL = oldURL.deletingPathExtension().appendingPathExtension("store-shm")
-            let newWal = appGroupURL.deletingPathExtension().appendingPathExtension("store-wal")
-            let newShm = appGroupURL.deletingPathExtension().appendingPathExtension("store-shm")
-            if FileManager.default.fileExists(atPath: walURL.path()) {
-                try? FileManager.default.copyItem(at: walURL, to: newWal)
-            }
-            if FileManager.default.fileExists(atPath: shmURL.path()) {
-                try? FileManager.default.copyItem(at: shmURL, to: newShm)
-            }
-        }
-
-        let modelConfiguration = ModelConfiguration(
+        let cloudConfig = ModelConfiguration(
             schema: schema,
-            url: appGroupURL,
-            allowsSave: true
+            cloudKitDatabase: .private("iCloud.com.firstfu.com.personal-finance")
         )
 
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            return try ModelContainer(
+                for: schema,
+                migrationPlan: FinanceMigrationPlan.self,
+                configurations: [cloudConfig]
+            )
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
@@ -52,8 +33,25 @@ struct personal_financeApp: App {
             ContentView()
                 .onAppear {
                     let context = sharedModelContainer.mainContext
+
+                    // One-time migration from old App Group store
+                    MigrationService.migrateIfNeeded(to: context)
+
+                    // Seed defaults (dedup by seedIdentifier)
                     DefaultCategories.seed(into: context)
                     DefaultCategories.seedAccounts(into: context)
+
+                    // Update widget snapshot
+                    WidgetDataSync.updateSnapshot(from: context)
+
+                    // Listen for CloudKit remote changes
+                    NotificationCenter.default.addObserver(
+                        forName: .NSPersistentStoreRemoteChange,
+                        object: nil,
+                        queue: .main
+                    ) { _ in
+                        WidgetDataSync.updateSnapshot(from: context)
+                    }
                 }
         }
         .modelContainer(sharedModelContainer)

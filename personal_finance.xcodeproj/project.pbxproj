@@ -71,12 +71,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Helpers/CurrencyFormatter.swift,
-				Models/Account.swift,
-				Models/AccountType.swift,
-				Models/Category.swift,
-				Models/DefaultCategories.swift,
-				Models/Transaction.swift,
-				Models/TransactionType.swift,
+				Services/WidgetSnapshot.swift,
 				Theme/AppTheme.swift,
 				"Theme/Color+Hex.swift",
 			);

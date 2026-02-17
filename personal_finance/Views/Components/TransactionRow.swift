@@ -38,7 +38,7 @@ struct TransactionRow: View {
                 Text(amountText)
                     .font(.body.bold())
                     .foregroundStyle(transaction.type == .income ? AppTheme.income : AppTheme.expense)
-                Text(transaction.date, format: .dateTime.month().day())
+                Text(transaction.date, format: .dateTime.month().day().locale(Locale(identifier: "zh-TW")))
                     .font(.caption)
                     .foregroundStyle(AppTheme.secondaryText)
                 if let accountName = transaction.account?.name {

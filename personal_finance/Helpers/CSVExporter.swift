@@ -20,7 +20,7 @@ enum CSVExporter {
 
     static func exportToFile(transactions: [Transaction]) -> URL? {
         let csv = export(transactions: transactions)
-        let fileName = "personal_finance_export_\(Date.now.formatted(.dateTime.year().month().day())).csv"
+        let fileName = "personal_finance_export_\(Date.now.formatted(.dateTime.year().month().day().locale(Locale(identifier: "zh-TW")))).csv"
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
         do {
             try csv.write(to: url, atomically: true, encoding: .utf8)
