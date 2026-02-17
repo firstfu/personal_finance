@@ -43,12 +43,16 @@ struct HomeView: View {
     private var allTransactions: [Transaction]
     @Query(sort: \Account.sortOrder) private var accounts: [Account]
 
+    @State private var periodState = TimePeriodState(periodType: .month)
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: AppTheme.cardSpacing) {
                     greetingSection
+                    monthNavigationBar
                     MonthlySummaryCard(
+                        title: periodState.periodLabel + "餘額",
                         balance: totalIncome - totalExpense,
                         totalIncome: totalIncome,
                         totalExpense: totalExpense
@@ -62,12 +66,39 @@ struct HomeView: View {
         }
     }
 
+    private var monthNavigationBar: some View {
+        HStack {
+            Button {
+                periodState.goBack()
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.body.bold())
+                    .foregroundStyle(AppTheme.primary)
+                    .frame(width: 36, height: 36)
+            }
+
+            Spacer()
+
+            Text(periodState.periodLabel)
+                .font(.subheadline.bold())
+
+            Spacer()
+
+            Button {
+                periodState.goForward()
+            } label: {
+                Image(systemName: "chevron.right")
+                    .font(.body.bold())
+                    .foregroundStyle(periodState.isCurrentPeriod ? AppTheme.secondaryText.opacity(0.3) : AppTheme.primary)
+                    .frame(width: 36, height: 36)
+            }
+            .disabled(periodState.isCurrentPeriod)
+        }
+    }
+
     private var monthlyTransactions: [Transaction] {
-        let calendar = Calendar.current
-        let now = Date.now
-        guard let start = calendar.date(from: calendar.dateComponents([.year, .month], from: now)),
-              let end = calendar.date(byAdding: .month, value: 1, to: start) else { return [] }
-        return allTransactions.filter { $0.date >= start && $0.date < end }
+        let range = periodState.dateRange
+        return allTransactions.filter { $0.date >= range.start && $0.date < range.end }
     }
 
     private var totalIncome: Decimal {
