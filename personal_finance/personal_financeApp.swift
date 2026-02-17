@@ -64,15 +64,13 @@ struct personal_financeApp: App {
                     // Clean up any duplicate seed data
                     DefaultCategories.removeDuplicates(from: context)
 
-                    // Seed defaults only if user hasn't reset data
-                    if !UserDefaults.standard.bool(forKey: "hasResetAllData") {
-                        DefaultCategories.seed(into: context)
-                        DefaultCategories.seedAccounts(into: context)
+                    // Seed defaults (dedup by seedIdentifier)
+                    DefaultCategories.seed(into: context)
+                    DefaultCategories.seedAccounts(into: context)
 
-                        // Seed initial sprout plant if none exists
-                        let sproutService = SproutGrowthService(modelContext: context)
-                        _ = sproutService.getActivePlant()
-                    }
+                    // Seed initial sprout plant if none exists
+                    let sproutService = SproutGrowthService(modelContext: context)
+                    _ = sproutService.getActivePlant()
 
                     // Update widget snapshot
                     WidgetDataSync.updateSnapshot(from: context)

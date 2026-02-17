@@ -198,13 +198,14 @@ struct SettingsView: View {
         for tx in allTransactions {
             modelContext.delete(tx)
         }
-        for account in accounts {
+        // Delete non-default accounts only
+        for account in accounts where !account.isDefault {
             modelContext.delete(account)
         }
-        // Fetch categories via descriptor for deletion
+        // Delete non-default categories only
         let descriptor = FetchDescriptor<Category>()
         if let allCategories = try? modelContext.fetch(descriptor) {
-            for category in allCategories {
+            for category in allCategories where !category.isDefault {
                 modelContext.delete(category)
             }
         }
@@ -220,8 +221,6 @@ struct SettingsView: View {
             }
         }
         try? modelContext.save()
-        // Mark that user has reset all data, prevent re-seeding on next launch
-        UserDefaults.standard.set(true, forKey: "hasResetAllData")
         WidgetDataSync.updateSnapshot(from: modelContext)
     }
 }
