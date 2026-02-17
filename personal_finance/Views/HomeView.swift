@@ -55,7 +55,7 @@ struct HomeView: View {
                     monthNavigationBar
                     MonthlySummaryCard(
                         title: periodState.periodLabel + "餘額",
-                        balance: totalIncome - totalExpense,
+                        balance: totalBalance,
                         totalIncome: totalIncome,
                         totalExpense: totalExpense
                     )
@@ -114,6 +114,10 @@ struct HomeView: View {
 
     private var totalExpense: Decimal {
         monthlyTransactions.filter { $0.type == .expense }.reduce(0) { $0 + $1.amount }
+    }
+
+    private var totalBalance: Decimal {
+        accounts.reduce(Decimal.zero) { $0 + $1.currentBalance }
     }
 
     private var greetingSection: some View {

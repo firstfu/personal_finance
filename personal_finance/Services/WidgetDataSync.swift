@@ -123,11 +123,13 @@ enum WidgetDataSync {
         monthFormatter.locale = Locale(identifier: "zh_TW")
         monthFormatter.dateFormat = "M月"
 
+        let totalBalance = accounts.reduce(Decimal.zero) { $0 + $1.currentBalance }
+
         let snapshot = WidgetSnapshot(
             date: now,
             monthlyIncomeString: "\(monthlyIncome)",
             monthlyExpenseString: "\(monthlyExpense)",
-            monthlyBalanceString: "\(monthlyIncome - monthlyExpense)",
+            monthlyBalanceString: "\(totalBalance)",
             topCategories: Array(topCategories),
             recentTransactions: recentTransactions,
             accounts: accountSummaries,

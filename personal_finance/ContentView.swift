@@ -29,6 +29,10 @@ struct ContentView: View {
     @State private var selectedTab = 0
 
     init() {
+        let appearance = UITabBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
         UITabBar.appearance().unselectedItemTintColor = .systemGray
     }
 
