@@ -27,6 +27,9 @@ struct personal_financeApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onAppear {
+                    DefaultCategories.seed(into: sharedModelContainer.mainContext)
+                }
         }
         .modelContainer(sharedModelContainer)
     }
