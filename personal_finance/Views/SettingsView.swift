@@ -178,7 +178,7 @@ struct SettingsView: View {
                     resetAllData()
                 }
             } message: {
-                Text("這將刪除所有交易紀錄和帳戶資料。此操作無法復原。")
+                Text("這將刪除所有交易紀錄、分類、帳戶及豆芽資料。此操作無法復原。")
             }
         }
     }
@@ -208,10 +208,20 @@ struct SettingsView: View {
                 modelContext.delete(category)
             }
         }
+        // Delete all sprout plants and harvest records
+        if let allPlants = try? modelContext.fetch(FetchDescriptor<SproutPlant>()) {
+            for plant in allPlants {
+                modelContext.delete(plant)
+            }
+        }
+        if let allHarvests = try? modelContext.fetch(FetchDescriptor<HarvestRecord>()) {
+            for record in allHarvests {
+                modelContext.delete(record)
+            }
+        }
         try? modelContext.save()
-        // Re-seed defaults
-        DefaultCategories.seed(into: modelContext)
-        DefaultCategories.seedAccounts(into: modelContext)
+        // Mark that user has reset all data, prevent re-seeding on next launch
+        UserDefaults.standard.set(true, forKey: "hasResetAllData")
         WidgetDataSync.updateSnapshot(from: modelContext)
     }
 }
