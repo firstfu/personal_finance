@@ -64,6 +64,7 @@ struct AccountFormView: View {
     @State private var icon = "building.columns.fill"
     @State private var colorHex = "#2196F3"
     @State private var initialBalance = ""
+    @State private var showBalanceAdjustment = false
 
     private let colorOptions = [
         "#4CAF50", "#2196F3", "#FF9800", "#E91E63",
@@ -88,6 +89,21 @@ struct AccountFormView: View {
                 Section("初始餘額") {
                     TextField("0", text: $initialBalance)
                         .keyboardType(.numberPad)
+                }
+
+                if case .edit(let account) = mode {
+                    Section("目前餘額") {
+                        HStack {
+                            Text(CurrencyFormatter.format(account.currentBalance))
+                                .font(.title3.bold())
+                                .foregroundStyle(account.currentBalance >= 0 ? AppTheme.income : AppTheme.expense)
+                            Spacer()
+                            Button("調整餘額") {
+                                showBalanceAdjustment = true
+                            }
+                            .font(.callout)
+                        }
+                    }
                 }
 
                 Section("顏色") {
