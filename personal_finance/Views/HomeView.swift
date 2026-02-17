@@ -44,6 +44,7 @@ struct HomeView: View {
     @Query(sort: \Account.sortOrder) private var accounts: [Account]
 
     @State private var periodState = TimePeriodState(periodType: .month)
+    @State private var selectedTransaction: Transaction?
 
     var body: some View {
         NavigationStack {
@@ -130,8 +131,16 @@ struct HomeView: View {
     private var accountBalanceSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Header
-            Text("帳戶總覽")
-                .font(.headline)
+            HStack {
+                Text("帳戶總覽")
+                    .font(.headline)
+                Spacer()
+                NavigationLink("查看全部") {
+                    AllAccountsView()
+                }
+                .font(.subheadline)
+                .foregroundStyle(AppTheme.primary)
+            }
 
             // 按帳戶類型匯總
             ForEach(AccountType.allCases, id: \.self) { type in
@@ -180,8 +189,16 @@ struct HomeView: View {
     private var recentTransactionsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
-            Text("最近交易")
-                .font(.headline)
+            HStack {
+                Text("最近交易")
+                    .font(.headline)
+                Spacer()
+                NavigationLink("查看全部") {
+                    AllTransactionsView()
+                }
+                .font(.subheadline)
+                .foregroundStyle(AppTheme.primary)
+            }
 
             if allTransactions.isEmpty {
                 Text("尚無交易紀錄")
@@ -195,11 +212,18 @@ struct HomeView: View {
                         Divider()
                     }
                     TransactionRow(transaction: tx)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            selectedTransaction = tx
+                        }
                 }
             }
         }
         .padding()
         .background(AppTheme.surface)
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
+        .sheet(item: $selectedTransaction) { tx in
+            EditTransactionView(transaction: tx)
+        }
     }
 }

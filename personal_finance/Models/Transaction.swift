@@ -38,6 +38,7 @@ final class Transaction {
     var type: TransactionType = TransactionType.expense
     var category: Category?
     var account: Account?
+    var transferToAccount: Account?
     var note: String = ""
     var date: Date = Date.now
     var createdAt: Date = Date.now
@@ -50,11 +51,12 @@ final class Transaction {
         set { amountString = "\(newValue)" }
     }
 
-    init(amount: Decimal, type: TransactionType, category: Category? = nil, account: Account? = nil, note: String = "", date: Date = .now, isDemoData: Bool = false) {
+    init(amount: Decimal, type: TransactionType, category: Category? = nil, account: Account? = nil, transferToAccount: Account? = nil, note: String = "", date: Date = .now, isDemoData: Bool = false) {
         self.amountString = "\(amount)"
         self.type = type
         self.category = category
         self.account = account
+        self.transferToAccount = transferToAccount
         self.note = note
         self.date = date
         self.createdAt = .now

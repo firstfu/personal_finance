@@ -49,6 +49,9 @@ final class Account {
     @Relationship(deleteRule: .nullify, inverse: \Transaction.account)
     var transactions: [Transaction]? = []
 
+    @Relationship(deleteRule: .nullify, inverse: \Transaction.transferToAccount)
+    var transferInTransactions: [Transaction]? = []
+
     @Transient
     var initialBalance: Decimal {
         get { Decimal(string: initialBalanceString) ?? 0 }
@@ -75,6 +78,11 @@ final class Account {
         let expenseTotal = allTransactions
             .filter { $0.type == .expense }
             .reduce(Decimal.zero) { $0 + $1.amount }
-        return initialBalance + incomeTotal - expenseTotal
+        let transferOutTotal = allTransactions
+            .filter { $0.type == .transfer }
+            .reduce(Decimal.zero) { $0 + $1.amount }
+        let transferInTotal = (transferInTransactions ?? [])
+            .reduce(Decimal.zero) { $0 + $1.amount }
+        return initialBalance + incomeTotal - expenseTotal - transferOutTotal + transferInTotal
     }
 }

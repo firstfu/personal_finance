@@ -46,21 +46,30 @@ import SwiftUI
 struct TransactionRow: View {
     let transaction: Transaction
 
+    private var isTransfer: Bool {
+        transaction.type == .transfer
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(categoryColor.opacity(0.15))
+                    .fill((isTransfer ? AppTheme.primary : categoryColor).opacity(0.15))
                     .frame(width: 40, height: 40)
-                Image(systemName: transaction.category?.icon ?? "questionmark.circle")
-                    .foregroundStyle(categoryColor)
+                Image(systemName: isTransfer ? "arrow.left.arrow.right" : (transaction.category?.icon ?? "questionmark.circle"))
+                    .foregroundStyle(isTransfer ? AppTheme.primary : categoryColor)
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(transaction.category?.name ?? "未分類")
+                Text(isTransfer ? "轉帳" : (transaction.category?.name ?? "未分類"))
                     .font(.body)
                     .foregroundStyle(AppTheme.onBackground)
-                if !transaction.note.isEmpty {
+                if isTransfer {
+                    Text(transferSubtitle)
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .lineLimit(1)
+                } else if !transaction.note.isEmpty {
                     Text(transaction.note)
                         .font(.caption)
                         .foregroundStyle(AppTheme.secondaryText)
@@ -73,11 +82,11 @@ struct TransactionRow: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(amountText)
                     .font(.body.bold())
-                    .foregroundStyle(transaction.type == .income ? AppTheme.income : AppTheme.expense)
+                    .foregroundStyle(amountColor)
                 Text(transaction.date, format: .dateTime.month().day().locale(Locale(identifier: "zh-TW")))
                     .font(.caption)
                     .foregroundStyle(AppTheme.secondaryText)
-                if let accountName = transaction.account?.name {
+                if !isTransfer, let accountName = transaction.account?.name {
                     Text(accountName)
                         .font(.caption2)
                         .foregroundStyle(AppTheme.secondaryText)
@@ -92,8 +101,28 @@ struct TransactionRow: View {
         return Color(hex: hex)
     }
 
+    private var transferSubtitle: String {
+        let from = transaction.account?.name ?? "未知帳戶"
+        let to = transaction.transferToAccount?.name ?? "未知帳戶"
+        return "\(from) → \(to)"
+    }
+
+    private var amountColor: Color {
+        switch transaction.type {
+        case .income: AppTheme.income
+        case .expense: AppTheme.expense
+        case .transfer: AppTheme.primary
+        }
+    }
+
     private var amountText: String {
-        let prefix = transaction.type == .income ? "+" : "-"
-        return prefix + CurrencyFormatter.format(transaction.amount)
+        switch transaction.type {
+        case .income:
+            return "+" + CurrencyFormatter.format(transaction.amount)
+        case .expense:
+            return "-" + CurrencyFormatter.format(transaction.amount)
+        case .transfer:
+            return CurrencyFormatter.format(transaction.amount)
+        }
     }
 }

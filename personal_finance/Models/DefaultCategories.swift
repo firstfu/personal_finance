@@ -17,7 +17,7 @@
 //   - 定義 CategoryData 與 AccountData 結構，描述種子資料的欄位
 //   - 提供 8 種預設支出分類（飲食、交通、娛樂、購物、居住、醫療、教育、其他）
 //   - 提供 4 種預設收入分類（薪資、獎金、投資、其他）
-//   - 提供 3 個預設帳戶（現金、銀行存款、信用卡）
+//   - 提供 4 個預設帳戶（現金、合庫、土銀、LinePay）
 //   - 透過 seed(into:) 方法將分類植入 ModelContext（跳過已存在的項目）
 //   - 透過 seedAccounts(into:) 方法將帳戶植入 ModelContext（跳過已存在的項目）
 //
@@ -29,7 +29,7 @@
 //   - all: 所有預設分類（支出 + 收入）的陣列
 //   - expense: 預設支出分類陣列（8 筆）
 //   - income: 預設收入分類陣列（4 筆）
-//   - defaultAccounts: 預設帳戶陣列（3 筆）
+//   - defaultAccounts: 預設帳戶陣列（4 筆）
 //
 // 注意事項：
 //   - 植入的分類與帳戶 isDefault 皆為 true，UI 層應禁止使用者刪除
@@ -100,8 +100,9 @@ enum DefaultCategories {
 
     static let defaultAccounts: [AccountData] = [
         .init(name: "現金", type: .cash, icon: "banknote.fill", colorHex: "#4CAF50", sortOrder: 0, seedIdentifier: "default_account_0"),
-        .init(name: "銀行存款", type: .bank, icon: "building.columns.fill", colorHex: "#2196F3", sortOrder: 1, seedIdentifier: "default_account_1"),
-        .init(name: "信用卡", type: .creditCard, icon: "creditcard.fill", colorHex: "#FF9800", sortOrder: 2, seedIdentifier: "default_account_2"),
+        .init(name: "合庫", type: .bank, icon: "building.columns.fill", colorHex: "#2196F3", sortOrder: 1, seedIdentifier: "default_account_1"),
+        .init(name: "土銀", type: .bank, icon: "building.columns.fill", colorHex: "#1565C0", sortOrder: 2, seedIdentifier: "default_account_2"),
+        .init(name: "LinePay", type: .eWallet, icon: "iphone.gen3", colorHex: "#00C300", sortOrder: 3, seedIdentifier: "default_account_3"),
     ]
 
     static func seedAccounts(into context: ModelContext) {

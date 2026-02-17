@@ -34,11 +34,13 @@ import Foundation
 enum TransactionType: String, Codable, CaseIterable {
     case income
     case expense
+    case transfer
 
     var displayName: String {
         switch self {
         case .income: "收入"
         case .expense: "支出"
+        case .transfer: "轉帳"
         }
     }
 }

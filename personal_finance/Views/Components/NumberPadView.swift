@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 enum NumberPadLogic {
     static func append(_ char: String, to text: inout String) {
@@ -59,8 +60,10 @@ enum NumberPadLogic {
 
 struct NumberPadView: View {
     @Binding var text: String
-    var onSave: () -> Void
-    var canSave: Bool
+    var onSave: (() -> Void)? = nil
+    var canSave: Bool = true
+    var saveButtonColor: Color = AppTheme.primaryDark
+    var saveButtonLabel: String = "儲存"
 
     private let buttons: [[String]] = [
         ["7", "8", "9"],
@@ -85,17 +88,19 @@ struct NumberPadView: View {
                 }
             }
 
-            Button(action: onSave) {
-                Text("儲存")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(canSave ? AppTheme.primaryDark : Color.gray.opacity(0.3))
-                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonCornerRadius))
+            if let onSave {
+                Button(action: onSave) {
+                    Text(saveButtonLabel)
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(canSave ? saveButtonColor : Color.gray.opacity(0.3))
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonCornerRadius))
+                }
+                .disabled(!canSave)
+                .padding(.top, 4)
             }
-            .disabled(!canSave)
-            .padding(.top, 4)
         }
         .padding(.horizontal, AppTheme.horizontalPadding)
     }
@@ -132,6 +137,7 @@ struct NumberPadButton: View {
             .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonCornerRadius))
             .opacity(isPressed ? 0.7 : 1.0)
             .onTapGesture {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 onTap()
             }
             .onLongPressGesture(minimumDuration: 0.3, pressing: { pressing in
