@@ -50,21 +50,32 @@ struct TransactionRow: View {
         transaction.type == .transfer
     }
 
+    private var isAdjustment: Bool {
+        transaction.type == .adjustment
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill((isTransfer ? AppTheme.primary : categoryColor).opacity(0.15))
+                    .fill((isTransfer || isAdjustment ? AppTheme.primary : categoryColor).opacity(0.15))
                     .frame(width: 40, height: 40)
-                Image(systemName: isTransfer ? "arrow.left.arrow.right" : (transaction.category?.icon ?? "questionmark.circle"))
-                    .foregroundStyle(isTransfer ? AppTheme.primary : categoryColor)
+                Image(systemName: isAdjustment ? "plusminus" : (isTransfer ? "arrow.left.arrow.right" : (transaction.category?.icon ?? "questionmark.circle")))
+                    .foregroundStyle(isTransfer || isAdjustment ? AppTheme.primary : categoryColor)
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(isTransfer ? "轉帳" : (transaction.category?.name ?? "未分類"))
+                Text(isAdjustment ? "餘額調整" : (isTransfer ? "轉帳" : (transaction.category?.name ?? "未分類")))
                     .font(.body)
                     .foregroundStyle(AppTheme.onBackground)
-                if isTransfer {
+                if isAdjustment {
+                    if !transaction.note.isEmpty {
+                        Text(transaction.note)
+                            .font(.caption)
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .lineLimit(1)
+                    }
+                } else if isTransfer {
                     Text(transferSubtitle)
                         .font(.caption)
                         .foregroundStyle(AppTheme.secondaryText)
@@ -86,7 +97,7 @@ struct TransactionRow: View {
                 Text(transaction.date, format: .dateTime.month().day().locale(Locale(identifier: "zh-TW")))
                     .font(.caption)
                     .foregroundStyle(AppTheme.secondaryText)
-                if !isTransfer, let accountName = transaction.account?.name {
+                if !isTransfer && !isAdjustment, let accountName = transaction.account?.name {
                     Text(accountName)
                         .font(.caption2)
                         .foregroundStyle(AppTheme.secondaryText)
@@ -112,6 +123,7 @@ struct TransactionRow: View {
         case .income: AppTheme.income
         case .expense: AppTheme.expense
         case .transfer: AppTheme.primary
+        case .adjustment: AppTheme.primary
         }
     }
 
@@ -123,6 +135,9 @@ struct TransactionRow: View {
             return "-" + CurrencyFormatter.format(transaction.amount)
         case .transfer:
             return CurrencyFormatter.format(transaction.amount)
+        case .adjustment:
+            let prefix = transaction.amount >= 0 ? "+" : ""
+            return prefix + CurrencyFormatter.format(transaction.amount)
         }
     }
 }
