@@ -16,16 +16,16 @@ iOS/iPadOS 個人記帳應用程式，使用 Swift + SwiftUI + SwiftData 建構�
 ```bash
 # 建置
 xcodebuild -project personal_finance.xcodeproj -scheme personal_finance \
-  -destination 'platform=iOS Simulator,name=iPhone 16' build
+  -destination 'platform=iOS Simulator,id=CDBF104B-5DB1-48C7-9E80-F483AC4A2C06' build
 
 # 執行單元測試（使用 Swift Testing 框架）
 xcodebuild test -project personal_finance.xcodeproj -scheme personal_finance \
-  -destination 'platform=iOS Simulator,name=iPhone 16' \
+  -destination 'platform=iOS Simulator,id=CDBF104B-5DB1-48C7-9E80-F483AC4A2C06' \
   -only-testing:personal_financeTests
 
 # 執行 UI 測試（使用 XCTest 框架）
 xcodebuild test -project personal_finance.xcodeproj -scheme personal_finance \
-  -destination 'platform=iOS Simulator,name=iPhone 16' \
+  -destination 'platform=iOS Simulator,id=CDBF104B-5DB1-48C7-9E80-F483AC4A2C06' \
   -only-testing:personal_financeUITests
 ```
 
