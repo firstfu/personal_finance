@@ -66,14 +66,38 @@ struct FinanceTimelineProvider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (FinanceWidgetEntry) -> Void) {
-        completion(.placeholder)
+        if context.isPreview {
+            completion(.placeholder)
+        } else {
+            completion(WidgetDataProvider.fetchEntry())
+        }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<FinanceWidgetEntry>) -> Void) {
-        let entry = FinanceWidgetEntry.placeholder
+        let entry = WidgetDataProvider.fetchEntry()
         let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: .now)!
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
         completion(timeline)
+    }
+}
+
+// MARK: - Widget Entry View
+
+struct personal_finance_WidgetEntryView: View {
+    @Environment(\.widgetFamily) var family
+    let entry: FinanceWidgetEntry
+
+    var body: some View {
+        switch family {
+        case .systemSmall:
+            SmallWidgetView(entry: entry)
+        case .systemMedium:
+            MediumWidgetView(entry: entry)
+        case .systemLarge:
+            LargeWidgetView(entry: entry)
+        default:
+            SmallWidgetView(entry: entry)
+        }
     }
 }
 
@@ -85,8 +109,8 @@ struct personal_finance_Widget: Widget {
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: FinanceTimelineProvider()) { entry in
-            Text("Widget")
-                .containerBackground(.fill.tertiary, for: .widget)
+            personal_finance_WidgetEntryView(entry: entry)
+                .containerBackground(.clear, for: .widget)
         }
         .configurationDisplayName("月收支摘要")
         .description("查看本月收入、支出和餘額")
