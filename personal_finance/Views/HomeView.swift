@@ -52,10 +52,11 @@ struct HomeView: View {
             ScrollView {
                 VStack(spacing: AppTheme.cardSpacing) {
                     greetingSection
+                    totalAssetHeader
                     monthNavigationBar
                     MonthlySummaryCard(
-                        title: periodState.periodLabel + "餘額",
-                        balance: totalBalance,
+                        title: periodState.periodLabel + "收支",
+                        balance: monthlyNetIncome,
                         totalIncome: totalIncome,
                         totalExpense: totalExpense
                     )
@@ -116,8 +117,12 @@ struct HomeView: View {
         monthlyTransactions.filter { $0.type == .expense }.reduce(0) { $0 + $1.amount }
     }
 
+    private var monthlyNetIncome: Decimal {
+        totalIncome - totalExpense
+    }
+
     private var totalBalance: Decimal {
-        accounts.reduce(Decimal.zero) { $0 + $1.currentBalance }
+        accounts.reduce(Decimal.zero) { $0 + (showDemoData ? $1.demoBalance : $1.currentBalance) }
     }
 
     private var greetingSection: some View {
@@ -136,6 +141,18 @@ struct HomeView: View {
                 .foregroundStyle(AppTheme.secondaryText)
         }
         .padding(.top, showDemoData ? 32 : 8)
+    }
+
+    private var totalAssetHeader: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("總資產")
+                .font(.subheadline)
+                .foregroundStyle(AppTheme.secondaryText)
+            Text(CurrencyFormatter.format(totalBalance))
+                .font(.title.bold().monospacedDigit())
+                .foregroundStyle(totalBalance >= 0 ? AppTheme.onBackground : AppTheme.expense)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private static var chineseDateString: String {
@@ -184,19 +201,6 @@ struct HomeView: View {
                 }
             }
 
-            Divider()
-
-            // 總淨值
-            HStack {
-                Text("總淨值")
-                    .font(.headline)
-                Spacer()
-                let totalNetWorth = accounts.reduce(Decimal.zero) { $0 + (showDemoData ? $1.demoBalance : $1.currentBalance) }
-                Text(CurrencyFormatter.format(totalNetWorth))
-                    .font(.headline.bold().monospacedDigit())
-                    .foregroundStyle(totalNetWorth >= 0 ? AppTheme.income : AppTheme.expense)
-            }
-            .padding(.vertical, 2)
         }
         .padding()
         .background(AppTheme.surface)
