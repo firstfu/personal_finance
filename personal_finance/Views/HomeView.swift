@@ -16,14 +16,14 @@
 // 主要職責：
 //   - 顯示問候語及當前日期（繁體中文格式）
 //   - 計算並展示當月收入、支出與餘額摘要
-//   - 列出所有帳戶的即時餘額與總淨值
-//   - 顯示最近 10 筆交易紀錄
+//   - 按帳戶類型匯總餘額與總淨值
+//   - 顯示最近 5 筆交易紀錄
 //
 // UI 結構：
 //   - greetingSection: 頂部問候區，顯示「嗨，你好」與日期，右側有通知鈴鐺圖示
 //   - MonthlySummaryCard: 本月餘額摘要卡片（收入/支出/餘額）
-//   - accountBalanceSection: 各帳戶餘額列表，底部顯示總淨值
-//   - recentTransactionsSection: 最近交易列表，使用 TransactionRow 元件呈現
+//   - accountBalanceSection: 帳戶總覽卡片，按類型匯總餘額，底部顯示總淨值
+//   - recentTransactionsSection: 最近交易卡片，顯示最新 5 筆，使用 TransactionRow 元件呈現
 //
 // 資料依賴：
 //   - @Query allTransactions: 全部交易紀錄，依日期降序排列
@@ -129,34 +129,48 @@ struct HomeView: View {
 
     private var accountBalanceSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("帳戶餘額")
-                .font(.headline)
+            // Header
+            HStack {
+                Text("帳戶總覽")
+                    .font(.headline)
+                Spacer()
+                Button {
+                    // TODO: 導航到帳戶詳情頁
+                } label: {
+                    Text("查看全部")
+                        .font(.subheadline)
+                        .foregroundStyle(AppTheme.primary)
+                }
+            }
 
-            ForEach(Array(accounts.enumerated()), id: \.element.id) { index, account in
-                if index > 0 {
-                    Divider()
-                }
-                HStack(spacing: 12) {
-                    ZStack {
-                        Circle()
-                            .fill(Color(hex: account.colorHex).opacity(0.15))
-                            .frame(width: 36, height: 36)
-                        Image(systemName: account.icon)
+            // 按帳戶類型匯總
+            ForEach(AccountType.allCases, id: \.self) { type in
+                let typeAccounts = accounts.filter { $0.type == type }
+                if !typeAccounts.isEmpty {
+                    HStack(spacing: 12) {
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.primary.opacity(0.15))
+                                .frame(width: 36, height: 36)
+                            Image(systemName: type.defaultIcon)
+                                .font(.body)
+                                .foregroundStyle(AppTheme.primary)
+                        }
+                        Text(type.displayName)
                             .font(.body)
-                            .foregroundStyle(Color(hex: account.colorHex))
+                        Spacer()
+                        let total = typeAccounts.reduce(Decimal.zero) { $0 + $1.currentBalance }
+                        Text(CurrencyFormatter.format(total))
+                            .font(.body.bold().monospacedDigit())
+                            .foregroundStyle(total >= 0 ? AppTheme.onBackground : AppTheme.expense)
                     }
-                    Text(account.name)
-                        .font(.body)
-                    Spacer()
-                    Text(CurrencyFormatter.format(account.currentBalance))
-                        .font(.body.bold().monospacedDigit())
-                        .foregroundStyle(account.currentBalance >= 0 ? AppTheme.onBackground : AppTheme.expense)
+                    .padding(.vertical, 2)
                 }
-                .padding(.vertical, 2)
             }
 
             Divider()
 
+            // 總淨值
             HStack {
                 Text("總淨值")
                     .font(.headline)
@@ -168,12 +182,26 @@ struct HomeView: View {
             }
             .padding(.vertical, 2)
         }
+        .padding()
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
     }
 
     private var recentTransactionsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("最近交易")
-                .font(.headline)
+            // Header
+            HStack {
+                Text("最近交易")
+                    .font(.headline)
+                Spacer()
+                Button {
+                    // TODO: 導航到完整交易列表
+                } label: {
+                    Text("查看全部")
+                        .font(.subheadline)
+                        .foregroundStyle(AppTheme.primary)
+                }
+            }
 
             if allTransactions.isEmpty {
                 Text("尚無交易紀錄")
@@ -182,7 +210,7 @@ struct HomeView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 32)
             } else {
-                ForEach(Array(allTransactions.prefix(10).enumerated()), id: \.element.id) { index, tx in
+                ForEach(Array(allTransactions.prefix(5).enumerated()), id: \.element.id) { index, tx in
                     if index > 0 {
                         Divider()
                     }
@@ -190,5 +218,8 @@ struct HomeView: View {
                 }
             }
         }
+        .padding()
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
     }
 }
