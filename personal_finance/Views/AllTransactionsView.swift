@@ -196,6 +196,7 @@ struct AllTransactionsView: View {
                 case .income: result + tx.amount
                 case .expense: result - tx.amount
                 case .transfer: result
+                case .adjustment: result + tx.amount
                 }
             }
             Text((dayTotal >= 0 ? "+" : "") + CurrencyFormatter.format(dayTotal))
@@ -211,7 +212,7 @@ struct AllTransactionsView: View {
         // 類型
         Menu("類型") {
             Button("全部") { filterType = nil }
-            ForEach([TransactionType.expense, .income, .transfer], id: \.self) { type in
+            ForEach([TransactionType.expense, .income, .transfer, .adjustment], id: \.self) { type in
                 Button {
                     filterType = type
                 } label: {
