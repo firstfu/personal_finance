@@ -84,7 +84,10 @@ final class Account {
         let demoTransferIn = (transferInTransactions ?? []).filter { $0.isDemoData }
         let transferInTotal = demoTransferIn
             .reduce(Decimal.zero) { $0 + $1.amount }
-        return incomeTotal - expenseTotal - transferOutTotal + transferInTotal
+        let adjustmentTotal = demoTransactions
+            .filter { $0.type == .adjustment }
+            .reduce(Decimal.zero) { $0 + $1.amount }
+        return incomeTotal - expenseTotal - transferOutTotal + transferInTotal + adjustmentTotal
     }
 
     var currentBalance: Decimal {
@@ -100,6 +103,9 @@ final class Account {
             .reduce(Decimal.zero) { $0 + $1.amount }
         let transferInTotal = (transferInTransactions ?? [])
             .reduce(Decimal.zero) { $0 + $1.amount }
-        return initialBalance + incomeTotal - expenseTotal - transferOutTotal + transferInTotal
+        let adjustmentTotal = allTransactions
+            .filter { $0.type == .adjustment }
+            .reduce(Decimal.zero) { $0 + $1.amount }
+        return initialBalance + incomeTotal - expenseTotal - transferOutTotal + transferInTotal + adjustmentTotal
     }
 }
