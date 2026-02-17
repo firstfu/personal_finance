@@ -20,6 +20,7 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct ContentView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
@@ -78,6 +79,14 @@ struct ContentView: View {
                 .tag(3)
         }
         .tint(AppTheme.primaryDark)
+        .onAppear {
+            let appearance = UITabBarAppearance()
+            appearance.configureWithDefaultBackground()
+            appearance.stackedLayoutAppearance.normal.iconColor = .systemGray
+            appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.systemGray]
+            UITabBar.appearance().standardAppearance = appearance
+            UITabBar.appearance().scrollEdgeAppearance = appearance
+        }
         .overlay(alignment: .top) {
             if showDemoData {
                 HStack(spacing: 6) {

@@ -5,36 +5,7 @@
 // 功能說明：
 //   分類新增與編輯表單頁面，以 Sheet 形式呈現。
 //   提供名稱、類型、圖標與顏色的選擇，支援新增與編輯兩種模式。
-//
-// 主要職責：
-//   - 提供分類名稱輸入欄位
-//   - 提供支出/收入類型選擇
-//   - 以 6 欄網格顯示 12 個 SF Symbols 圖標供選取
-//   - 以 6 欄網格顯示 12 個預設顏色供選取（含勾選指示）
-//   - 新增模式：建立新 Category 物件並插入 ModelContext
-//   - 編輯模式：載入現有分類資料並就地更新屬性
-//
-// UI 結構：
-//   - Form 表單:
-//     - TextField: 分類名稱輸入
-//     - Picker: 支出/收入類型選擇
-//     - Section「圖標」: LazyVGrid 圖標選擇網格
-//     - Section「顏色」: LazyVGrid 顏色選擇網格
-//   - Toolbar:
-//     - 取消按鈕（cancellationAction）
-//     - 儲存按鈕（confirmationAction），名稱為空時禁用
-//
-// 資料依賴：
-//   - @Environment(\.modelContext): 用於插入新分類
-//   - @Environment(\.dismiss): 關閉 Sheet
-//   - Mode enum: .add（新增）或 .edit(Category)（編輯）
-//   - @State name / icon / colorHex / type: 表單狀態
-//
-// 注意事項：
-//   - Mode 遵循 Identifiable 協定以支援 .sheet(item:) 綁定
-//   - 編輯模式下 onAppear 時從既有分類載入初始值
-//   - 新增模式下 sortOrder 預設為 99（排序至最後）
-//   - initialType 參數用於新增時預設交易類型（從 CategoryManagementView 傳入）
+//   圖標與顏色使用固定高度的可捲動網格，避免頁面過長。
 // ============================================================================
 
 import SwiftUI
@@ -119,51 +90,56 @@ struct CategoryFormView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                TextField("名稱", text: $name)
-
-                Picker("類型", selection: $type) {
-                    Text("支出").tag(TransactionType.expense)
-                    Text("收入").tag(TransactionType.income)
+            VStack(spacing: 0) {
+                // MARK: - 預覽區
+                VStack(spacing: 8) {
+                    ZStack {
+                        Circle()
+                            .fill(Color(hex: colorHex).opacity(0.15))
+                            .frame(width: 64, height: 64)
+                        Image(systemName: icon)
+                            .font(.title)
+                            .foregroundStyle(Color(hex: colorHex))
+                    }
+                    Text(name.isEmpty ? "分類名稱" : name)
+                        .font(.subheadline)
+                        .foregroundStyle(name.isEmpty ? AppTheme.secondaryText : AppTheme.onBackground)
                 }
+                .padding(.top, 16)
+                .padding(.bottom, 12)
 
-                Section("圖標") {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
-                        ForEach(iconOptions, id: \.self) { ic in
-                            Button {
-                                icon = ic
-                            } label: {
-                                Image(systemName: ic)
-                                    .font(.title3)
-                                    .frame(width: 40, height: 40)
-                                    .background(icon == ic ? Color(hex: colorHex).opacity(0.2) : Color.clear)
-                                    .clipShape(Circle())
-                            }
-                            .buttonStyle(.plain)
+                // MARK: - 名稱與類型
+                VStack(spacing: 12) {
+                    HStack(spacing: 12) {
+                        TextField("名稱", text: $name)
+                            .textFieldStyle(.roundedBorder)
+
+                        Picker("", selection: $type) {
+                            Text("支出").tag(TransactionType.expense)
+                            Text("收入").tag(TransactionType.income)
                         }
+                        .pickerStyle(.segmented)
+                        .frame(width: 140)
                     }
                 }
+                .padding(.horizontal)
+                .padding(.bottom, 12)
 
-                Section("顏色") {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
-                        ForEach(colorOptions, id: \.self) { hex in
-                            Button {
-                                colorHex = hex
-                            } label: {
-                                Circle()
-                                    .fill(Color(hex: hex))
-                                    .frame(width: 32, height: 32)
-                                    .overlay {
-                                        if colorHex == hex {
-                                            Image(systemName: "checkmark")
-                                                .font(.caption.bold())
-                                                .foregroundStyle(.white)
-                                        }
-                                    }
-                            }
-                            .buttonStyle(.plain)
+                // MARK: - 圖標與顏色選擇（Tab 切換）
+                TabView {
+                    // 圖標 Tab
+                    iconGridView
+                        .tabItem {
+                            Image(systemName: "square.grid.2x2")
+                            Text("圖標")
                         }
-                    }
+
+                    // 顏色 Tab
+                    colorGridView
+                        .tabItem {
+                            Image(systemName: "paintpalette")
+                            Text("顏色")
+                        }
                 }
             }
             .navigationTitle(isEditing ? "編輯分類" : "新增分類")
@@ -190,6 +166,62 @@ struct CategoryFormView: View {
                     type = initialType
                 }
             }
+        }
+    }
+
+    // MARK: - 圖標網格
+    private var iconGridView: some View {
+        ScrollView {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 10) {
+                ForEach(iconOptions, id: \.self) { ic in
+                    Button {
+                        icon = ic
+                    } label: {
+                        Image(systemName: ic)
+                            .font(.title3)
+                            .frame(width: 44, height: 44)
+                            .background(icon == ic ? Color(hex: colorHex).opacity(0.2) : Color(.systemGray6))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(icon == ic ? Color(hex: colorHex) : Color.clear, lineWidth: 2)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding()
+        }
+    }
+
+    // MARK: - 顏色網格
+    private var colorGridView: some View {
+        ScrollView {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 10) {
+                ForEach(colorOptions, id: \.self) { hex in
+                    Button {
+                        colorHex = hex
+                    } label: {
+                        Circle()
+                            .fill(Color(hex: hex))
+                            .frame(width: 36, height: 36)
+                            .overlay {
+                                if colorHex == hex {
+                                    Image(systemName: "checkmark")
+                                        .font(.caption.bold())
+                                        .foregroundStyle(.white)
+                                }
+                            }
+                            .overlay(
+                                Circle()
+                                    .stroke(colorHex == hex ? Color(hex: hex) : Color.clear, lineWidth: 2)
+                                    .padding(-3)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding()
         }
     }
 
