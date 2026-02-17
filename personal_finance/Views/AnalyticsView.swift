@@ -15,6 +15,7 @@ struct AnalyticsView: View {
     @State private var selectedPeriod: Period = .month
     @State private var selectedDate: Date?
     @State private var selectedCategoryAngle: Double?
+    @State private var selectedIncomeCategoryAngle: Double?
 
     enum Period: String, CaseIterable {
         case week = "本週"
@@ -167,10 +168,22 @@ struct AnalyticsView: View {
                         .interpolationMethod(.catmullRom)
                     }
 
+                    ForEach(dailyNet, id: \.date) { data in
+                        LineMark(
+                            x: .value("日期", data.date, unit: .day),
+                            y: .value("金額", data.total),
+                            series: .value("類型", "淨額")
+                        )
+                        .foregroundStyle(AppTheme.primary)
+                        .interpolationMethod(.catmullRom)
+                        .lineStyle(StrokeStyle(lineWidth: 2, dash: [6, 3]))
+                    }
+
                     if let selectedDate {
                         let matchedExpense = dailyExpenses.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) })
                         let matchedIncome = dailyIncomes.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) })
-                        if let refDate = matchedExpense?.date ?? matchedIncome?.date {
+                        let matchedNet = dailyNet.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) })
+                        if let refDate = matchedExpense?.date ?? matchedIncome?.date ?? matchedNet?.date {
                             RuleMark(x: .value("日期", refDate, unit: .day))
                                 .foregroundStyle(.secondary.opacity(0.5))
                                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 2]))
@@ -188,6 +201,11 @@ struct AnalyticsView: View {
                                             Text("收入 NT$\(String(format: "%.0f", i.total))")
                                                 .font(.caption.bold())
                                                 .foregroundStyle(AppTheme.income)
+                                        }
+                                        if let n = matchedNet {
+                                            Text("淨額 NT$\(String(format: "%.0f", n.total))")
+                                                .font(.caption.bold())
+                                                .foregroundStyle(AppTheme.primary)
                                         }
                                     }
                                     .padding(.horizontal, 10)
@@ -211,6 +229,7 @@ struct AnalyticsView: View {
                 .chartForegroundStyleScale([
                     "支出": AppTheme.expense,
                     "收入": AppTheme.income,
+                    "淨額": AppTheme.primary,
                 ])
             }
         }
@@ -237,64 +256,40 @@ struct AnalyticsView: View {
             .sorted { $0.date < $1.date }
     }
 
+    private var dailyNet: [(date: Date, total: Double)] {
+        let calendar = Calendar.current
+        let allDates = Set(
+            (expenses + incomes).map { calendar.startOfDay(for: $0.date) }
+        )
+        let expenseByDay = Dictionary(grouping: expenses) { calendar.startOfDay(for: $0.date) }
+        let incomeByDay = Dictionary(grouping: incomes) { calendar.startOfDay(for: $0.date) }
+        return allDates.map { date in
+            let inc = incomeByDay[date]?.reduce(Decimal.zero) { $0 + $1.amount } ?? .zero
+            let exp = expenseByDay[date]?.reduce(Decimal.zero) { $0 + $1.amount } ?? .zero
+            return (date: date, total: NSDecimalNumber(decimal: inc - exp).doubleValue)
+        }
+        .sorted { $0.date < $1.date }
+    }
+
     private var categoryBreakdown: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("分類比例")
-                .font(.headline)
+            pieChart(
+                title: "支出分類",
+                data: categoryData,
+                selectedAngle: $selectedCategoryAngle,
+                accentColor: AppTheme.expense
+            )
 
-            if expenses.isEmpty {
-                Text("尚無資料")
-                    .foregroundStyle(AppTheme.secondaryText)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 32)
-            } else {
-                Chart(categoryData, id: \.name) { item in
-                    SectorMark(
-                        angle: .value("金額", NSDecimalNumber(decimal: item.total).doubleValue),
-                        innerRadius: .ratio(0.5),
-                        angularInset: 1
-                    )
-                    .foregroundStyle(Color(hex: item.colorHex))
-                    .opacity(selectedCategoryName == nil || selectedCategoryName == item.name ? 1.0 : 0.5)
-                }
-                .frame(height: 200)
-                .chartAngleSelection(value: $selectedCategoryAngle)
-                .chartBackground { chartProxy in
-                    GeometryReader { geometry in
-                        if let selectedItem = selectedCategoryItem {
-                            let frame = geometry[chartProxy.plotFrame!]
-                            VStack(spacing: 2) {
-                                Text(selectedItem.name)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Text(CurrencyFormatter.format(selectedItem.total))
-                                    .font(.callout.bold())
-                                    .foregroundStyle(AppTheme.expense)
-                                Text(String(format: "%.0f%%", selectedItem.percentage))
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .position(x: frame.midX, y: frame.midY)
-                        }
-                    }
-                }
+            if !incomes.isEmpty {
+                Divider()
+                    .padding(.vertical, 4)
 
-                ForEach(categoryData, id: \.name) { item in
-                    HStack {
-                        Circle()
-                            .fill(Color(hex: item.colorHex))
-                            .frame(width: 10, height: 10)
-                        Text(item.name)
-                            .font(.body)
-                        Spacer()
-                        Text(CurrencyFormatter.format(item.total))
-                            .font(.body.monospacedDigit())
-                        Text(String(format: "%.0f%%", item.percentage))
-                            .font(.caption)
-                            .foregroundStyle(AppTheme.secondaryText)
-                            .frame(width: 40, alignment: .trailing)
-                    }
-                }
+                pieChart(
+                    title: "收入分類",
+                    data: incomeCategoryData,
+                    selectedAngle: $selectedIncomeCategoryAngle,
+                    accentColor: AppTheme.income
+                )
             }
         }
         .padding(16)
@@ -302,27 +297,106 @@ struct AnalyticsView: View {
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
     }
 
-    private var selectedCategoryName: String? {
-        guard let selectedCategoryAngle else { return nil }
+    @ViewBuilder
+    private func pieChart(
+        title: String,
+        data: [(name: String, colorHex: String, total: Decimal, percentage: Double)],
+        selectedAngle: Binding<Double?>,
+        accentColor: Color
+    ) -> some View {
+        Text(title)
+            .font(.headline)
+
+        if data.isEmpty {
+            Text("尚無資料")
+                .foregroundStyle(AppTheme.secondaryText)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 32)
+        } else {
+            let selectedName = findSelectedName(in: data, angle: selectedAngle.wrappedValue)
+            let selectedItem = data.first { $0.name == selectedName }
+
+            Chart(data, id: \.name) { item in
+                SectorMark(
+                    angle: .value("金額", NSDecimalNumber(decimal: item.total).doubleValue),
+                    innerRadius: .ratio(0.5),
+                    angularInset: 1
+                )
+                .foregroundStyle(Color(hex: item.colorHex))
+                .opacity(selectedName == nil || selectedName == item.name ? 1.0 : 0.5)
+            }
+            .frame(height: 200)
+            .chartAngleSelection(value: selectedAngle)
+            .chartBackground { chartProxy in
+                GeometryReader { geometry in
+                    if let selectedItem {
+                        let frame = geometry[chartProxy.plotFrame!]
+                        VStack(spacing: 2) {
+                            Text(selectedItem.name)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text(CurrencyFormatter.format(selectedItem.total))
+                                .font(.callout.bold())
+                                .foregroundStyle(accentColor)
+                            Text(String(format: "%.0f%%", selectedItem.percentage))
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                        .position(x: frame.midX, y: frame.midY)
+                    }
+                }
+            }
+
+            ForEach(data, id: \.name) { item in
+                HStack {
+                    Circle()
+                        .fill(Color(hex: item.colorHex))
+                        .frame(width: 10, height: 10)
+                    Text(item.name)
+                        .font(.body)
+                    Spacer()
+                    Text(CurrencyFormatter.format(item.total))
+                        .font(.body.monospacedDigit())
+                    Text(String(format: "%.0f%%", item.percentage))
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .frame(width: 40, alignment: .trailing)
+                }
+            }
+        }
+    }
+
+    private func findSelectedName(
+        in data: [(name: String, colorHex: String, total: Decimal, percentage: Double)],
+        angle: Double?
+    ) -> String? {
+        guard let angle else { return nil }
         var cumulative: Double = 0
-        for item in categoryData {
-            let itemValue = NSDecimalNumber(decimal: item.total).doubleValue
-            cumulative += itemValue
-            if selectedCategoryAngle <= cumulative {
+        for item in data {
+            cumulative += NSDecimalNumber(decimal: item.total).doubleValue
+            if angle <= cumulative {
                 return item.name
             }
         }
-        return categoryData.last?.name
-    }
-
-    private var selectedCategoryItem: (name: String, colorHex: String, total: Decimal, percentage: Double)? {
-        guard let name = selectedCategoryName else { return nil }
-        return categoryData.first { $0.name == name }
+        return data.last?.name
     }
 
     private var categoryData: [(name: String, colorHex: String, total: Decimal, percentage: Double)] {
         let grouped = Dictionary(grouping: expenses) { $0.category?.name ?? "未分類" }
         let total = totalExpense
+        guard total > 0 else { return [] }
+        return grouped.map { key, txs in
+            let sum = txs.reduce(Decimal.zero) { $0 + $1.amount }
+            let colorHex = txs.first?.category?.colorHex ?? "#607D8B"
+            let pct = NSDecimalNumber(decimal: sum / total * 100).doubleValue
+            return (name: key, colorHex: colorHex, total: sum, percentage: pct)
+        }
+        .sorted { $0.total > $1.total }
+    }
+
+    private var incomeCategoryData: [(name: String, colorHex: String, total: Decimal, percentage: Double)] {
+        let grouped = Dictionary(grouping: incomes) { $0.category?.name ?? "未分類" }
+        let total = totalIncome
         guard total > 0 else { return [] }
         return grouped.map { key, txs in
             let sum = txs.reduce(Decimal.zero) { $0 + $1.amount }
