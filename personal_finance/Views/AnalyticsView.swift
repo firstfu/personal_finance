@@ -70,7 +70,7 @@ struct AnalyticsView: View {
                 .padding(.horizontal, AppTheme.horizontalPadding)
             }
             .navigationTitle("分析")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             .background(Color(.systemBackground))
         }
     }

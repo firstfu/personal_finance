@@ -96,7 +96,7 @@ struct AddTransactionView: View {
                 }
             }
             .navigationTitle("記帳")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             .animation(.easeInOut(duration: 0.3), value: showSavedFeedback)
             .onAppear {
                 if selectedAccount == nil {
@@ -279,21 +279,6 @@ struct AddTransactionView: View {
             }
             .disabled(!canSave)
 
-            // 再記一筆按鈕（填色樣式）
-            Button(action: {
-                saveTransaction(resetAfter: true)
-            }) {
-                Text("再記一筆")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(
-                        RoundedRectangle(cornerRadius: AppTheme.buttonCornerRadius)
-                            .fill(canSave ? typeColor : Color.gray.opacity(0.3))
-                    )
-            }
-            .disabled(!canSave)
         }
     }
 

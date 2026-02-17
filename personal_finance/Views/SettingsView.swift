@@ -165,7 +165,7 @@ struct SettingsView: View {
             .scrollContentBackground(.hidden)
             .background(Color(.systemBackground))
             .navigationTitle("設定")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             .sheet(isPresented: $showAddAccount) {
                 AccountFormView(mode: .add)
             }
