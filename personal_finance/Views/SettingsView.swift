@@ -163,7 +163,7 @@ struct SettingsView: View {
                 }
             }
             .scrollContentBackground(.hidden)
-            .background(Color(.systemBackground))
+            .background(AppTheme.background)
             .navigationTitle("設定")
             .navigationBarTitleDisplayMode(.large)
             .sheet(isPresented: $showAddAccount) {

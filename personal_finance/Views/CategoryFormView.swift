@@ -70,15 +70,51 @@ struct CategoryFormView: View {
     }
 
     private let iconOptions = [
-        "fork.knife", "car.fill", "gamecontroller.fill", "bag.fill",
-        "house.fill", "cross.case.fill", "book.fill", "tag.fill",
-        "briefcase.fill", "star.fill", "gift.fill", "heart.fill"
+        // 飲食相關
+        "fork.knife", "cup.and.saucer.fill", "wineglass.fill", "cart.fill", "basket.fill",
+        // 交通相關
+        "car.fill", "bus.fill", "tram.fill", "airplane", "bicycle", "fuelpump.fill", "parkingsign.circle.fill",
+        // 居住 / 水電
+        "house.fill", "building.2.fill", "bolt.fill", "drop.fill", "flame.fill", "wrench.fill", "key.fill",
+        // 購物 / 服飾
+        "bag.fill", "tag.fill", "tshirt.fill", "desktopcomputer",
+        // 醫療 / 運動
+        "cross.case.fill", "pills.fill", "figure.run", "dumbbell.fill", "heart.fill",
+        // 教育 / 工作
+        "book.fill", "graduationcap.fill", "briefcase.fill", "hammer.fill", "pencil.and.ruler.fill",
+        // 娛樂 / 社交
+        "gamecontroller.fill", "film.fill", "music.note", "tv.fill", "person.2.fill", "figure.and.child.holdinghands",
+        // 通訊 / 訂閱
+        "iphone.gen3", "wifi", "repeat.circle.fill", "antenna.radiowaves.left.and.right",
+        // 金融 / 保險
+        "creditcard.fill", "banknote.fill", "chart.line.uptrend.xyaxis", "chart.bar.fill", "shield.fill", "percent",
+        // 寵物 / 自然
+        "pawprint.fill", "leaf.fill", "sun.max.fill", "cloud.rain.fill",
+        // 美容 / 生活
+        "sparkles", "scissors", "paintbrush.fill", "camera.fill",
+        // 情感 / 其他
+        "gift.fill", "star.fill", "trophy.fill", "flag.fill", "mappin.and.ellipse",
+        "bell.fill", "lightbulb.fill", "doc.text.fill", "doc.plaintext.fill",
+        "hands.sparkles.fill", "arrow.uturn.backward.circle.fill",
+        "wallet.bifold.fill", "ellipsis.circle.fill",
     ]
 
     private let colorOptions = [
-        "#FF9800", "#2196F3", "#9C27B0", "#E91E63",
-        "#795548", "#F44336", "#3F51B5", "#607D8B",
-        "#4CAF50", "#FFC107", "#00BCD4", "#8BC34A"
+        // 紅色系
+        "#F44336", "#E91E63", "#FF5252", "#D32F2F",
+        // 粉紫系
+        "#9C27B0", "#AB47BC", "#7E57C2", "#5C6BC0",
+        // 藍色系
+        "#3F51B5", "#2196F3", "#1565C0", "#42A5F5", "#29B6F6",
+        // 青綠系
+        "#00BCD4", "#26C6DA", "#26A69A", "#009688",
+        // 綠色系
+        "#4CAF50", "#66BB6A", "#8BC34A", "#AED581", "#43A047",
+        // 黃橙系
+        "#FFC107", "#FFCA28", "#FFD600", "#FF9800", "#FFB74D", "#FF7043", "#FF8A65",
+        // 棕灰系
+        "#795548", "#8D6E63", "#6D4C41", "#A1887F",
+        "#607D8B", "#78909C", "#90A4AE", "#546E7A", "#455A64", "#37474F", "#757575",
     ]
 
     var body: some View {

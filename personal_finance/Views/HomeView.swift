@@ -64,7 +64,7 @@ struct HomeView: View {
                 }
                 .padding(.horizontal, AppTheme.horizontalPadding)
             }
-            .background(Color(.systemBackground))
+            .background(AppTheme.background)
             .toolbar(.hidden, for: .navigationBar)
         }
     }

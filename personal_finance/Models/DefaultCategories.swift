@@ -15,8 +15,8 @@
 //
 // 主要職責：
 //   - 定義 CategoryData 與 AccountData 結構，描述種子資料的欄位
-//   - 提供 18 種預設支出分類（飲食、交通、娛樂、購物、居住、醫療、教育、通訊、服飾、日用品、旅遊、社交、美容、保險、運動、寵物、孝親、其他）
-//   - 提供 9 種預設收入分類（薪資、獎金、投資、副業、利息、租金收入、禮金、退款、其他）
+//   - 提供 28 種預設支出分類
+//   - 提供 14 種預設收入分類
 //   - 提供 4 個預設帳戶（現金、合庫、土銀、LinePay）
 //   - 透過 seed(into:) 方法將分類植入 ModelContext（跳過已存在的項目）
 //   - 透過 seedAccounts(into:) 方法將帳戶植入 ModelContext（跳過已存在的項目）
@@ -70,7 +70,25 @@ enum DefaultCategories {
         .init(name: "運動", icon: "figure.run", colorHex: "#66BB6A", type: .expense, sortOrder: 14, seedIdentifier: "default_expense_15"),
         .init(name: "寵物", icon: "pawprint.fill", colorHex: "#FFCA28", type: .expense, sortOrder: 15, seedIdentifier: "default_expense_16"),
         .init(name: "孝親", icon: "heart.fill", colorHex: "#EF5350", type: .expense, sortOrder: 16, seedIdentifier: "default_expense_17"),
-        .init(name: "其他", icon: "ellipsis.circle.fill", colorHex: "#607D8B", type: .expense, sortOrder: 17, seedIdentifier: "default_expense_7"),
+        .init(name: "飲品", icon: "cup.and.saucer.fill", colorHex: "#A1887F", type: .expense, sortOrder: 17, seedIdentifier: "default_expense_18"),
+        .init(name: "電費", icon: "bolt.fill", colorHex: "#FFD600", type: .expense, sortOrder: 18, seedIdentifier: "default_expense_19"),
+        .init(name: "水費", icon: "drop.fill", colorHex: "#29B6F6", type: .expense, sortOrder: 19, seedIdentifier: "default_expense_20"),
+        .init(name: "瓦斯", icon: "flame.fill", colorHex: "#FF8A65", type: .expense, sortOrder: 20, seedIdentifier: "default_expense_21"),
+        .init(name: "停車", icon: "parkingsign.circle.fill", colorHex: "#42A5F5", type: .expense, sortOrder: 21, seedIdentifier: "default_expense_22"),
+        .init(name: "加油", icon: "fuelpump.fill", colorHex: "#546E7A", type: .expense, sortOrder: 22, seedIdentifier: "default_expense_23"),
+        .init(name: "維修", icon: "wrench.fill", colorHex: "#757575", type: .expense, sortOrder: 23, seedIdentifier: "default_expense_24"),
+        .init(name: "稅務", icon: "doc.text.fill", colorHex: "#7E57C2", type: .expense, sortOrder: 24, seedIdentifier: "default_expense_25"),
+        .init(name: "捐款", icon: "hands.sparkles.fill", colorHex: "#FF80AB", type: .expense, sortOrder: 25, seedIdentifier: "default_expense_26"),
+        .init(name: "訂閱", icon: "repeat.circle.fill", colorHex: "#26C6DA", type: .expense, sortOrder: 26, seedIdentifier: "default_expense_27"),
+        .init(name: "房貸", icon: "building.2.fill", colorHex: "#6D4C41", type: .expense, sortOrder: 27, seedIdentifier: "default_expense_28"),
+        .init(name: "車貸", icon: "car.2.fill", colorHex: "#455A64", type: .expense, sortOrder: 28, seedIdentifier: "default_expense_29"),
+        .init(name: "學貸", icon: "graduationcap.fill", colorHex: "#1E88E5", type: .expense, sortOrder: 29, seedIdentifier: "default_expense_30"),
+        .init(name: "手續費", icon: "creditcard.fill", colorHex: "#90A4AE", type: .expense, sortOrder: 30, seedIdentifier: "default_expense_31"),
+        .init(name: "禮物", icon: "gift.fill", colorHex: "#F06292", type: .expense, sortOrder: 31, seedIdentifier: "default_expense_32"),
+        .init(name: "菸酒", icon: "wineglass.fill", colorHex: "#D32F2F", type: .expense, sortOrder: 32, seedIdentifier: "default_expense_33"),
+        .init(name: "3C", icon: "desktopcomputer", colorHex: "#37474F", type: .expense, sortOrder: 33, seedIdentifier: "default_expense_34"),
+        .init(name: "托育", icon: "figure.and.child.holdinghands", colorHex: "#FFB74D", type: .expense, sortOrder: 34, seedIdentifier: "default_expense_35"),
+        .init(name: "其他", icon: "ellipsis.circle.fill", colorHex: "#607D8B", type: .expense, sortOrder: 35, seedIdentifier: "default_expense_7"),
     ]
 
     static let income: [CategoryData] = [
@@ -82,7 +100,12 @@ enum DefaultCategories {
         .init(name: "租金收入", icon: "key.fill", colorHex: "#8D6E63", type: .income, sortOrder: 5, seedIdentifier: "default_income_6"),
         .init(name: "禮金", icon: "gift.fill", colorHex: "#EC407A", type: .income, sortOrder: 6, seedIdentifier: "default_income_7"),
         .init(name: "退款", icon: "arrow.uturn.backward.circle.fill", colorHex: "#78909C", type: .income, sortOrder: 7, seedIdentifier: "default_income_8"),
-        .init(name: "其他", icon: "ellipsis.circle.fill", colorHex: "#8BC34A", type: .income, sortOrder: 8, seedIdentifier: "default_income_3"),
+        .init(name: "股息", icon: "chart.bar.fill", colorHex: "#43A047", type: .income, sortOrder: 8, seedIdentifier: "default_income_9"),
+        .init(name: "中獎", icon: "trophy.fill", colorHex: "#FFD54F", type: .income, sortOrder: 9, seedIdentifier: "default_income_10"),
+        .init(name: "報銷", icon: "doc.plaintext.fill", colorHex: "#90A4AE", type: .income, sortOrder: 10, seedIdentifier: "default_income_11"),
+        .init(name: "零用錢", icon: "wallet.bifold.fill", colorHex: "#AED581", type: .income, sortOrder: 11, seedIdentifier: "default_income_12"),
+        .init(name: "賣物", icon: "tag.fill", colorHex: "#FF8A65", type: .income, sortOrder: 12, seedIdentifier: "default_income_13"),
+        .init(name: "其他", icon: "ellipsis.circle.fill", colorHex: "#8BC34A", type: .income, sortOrder: 13, seedIdentifier: "default_income_3"),
     ]
 
     static func seed(into context: ModelContext) {

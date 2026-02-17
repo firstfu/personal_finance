@@ -71,7 +71,7 @@ struct AnalyticsView: View {
             }
             .navigationTitle("分析")
             .navigationBarTitleDisplayMode(.large)
-            .background(Color(.systemBackground))
+            .background(AppTheme.background)
         }
     }
 

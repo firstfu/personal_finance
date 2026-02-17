@@ -20,6 +20,7 @@
 // ============================================================================
 
 import SwiftUI
+import UIKit
 
 enum AppTheme {
     // Brand colors (fixed, don't change with dark mode)
@@ -29,7 +30,16 @@ enum AppTheme {
     static let expense = Color(hex: "#E53935")
 
     // Semantic colors (adapt to dark mode automatically)
-    static let surface = Color(.secondarySystemBackground)
+    static let background = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? .systemBackground
+            : UIColor(red: 244/255, green: 245/255, blue: 240/255, alpha: 1) // #F4F5F0
+    })
+    static let surface = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? .secondarySystemBackground
+            : .white
+    })
     static let onBackground = Color(.label)
     static let secondaryText = Color(.secondaryLabel)
 
