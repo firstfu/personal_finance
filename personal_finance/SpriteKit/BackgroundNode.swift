@@ -16,6 +16,8 @@ final class BackgroundNode: SKNode {
 
     private let sceneSize: CGSize
     private var currentSprite: SKSpriteNode?
+    private var isDarkMode: Bool = false
+    private var currentStage: Int = 0
 
     // MARK: - Initialization
 

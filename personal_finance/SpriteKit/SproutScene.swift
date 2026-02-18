@@ -36,7 +36,6 @@ final class SproutScene: SKScene {
     override func didMove(to view: SKView) {
         super.didMove(to: view)
         backgroundColor = .clear
-        scaleMode = .aspectFit
 
         let background = BackgroundNode(sceneSize: size)
         addChild(background)

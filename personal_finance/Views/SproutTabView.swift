@@ -87,10 +87,24 @@ struct SproutTabView: View {
     private var plantVisual: some View {
         VStack(spacing: 12) {
             if let scene = sproutScene {
-                SpriteView(scene: scene, options: [.allowsTransparency])
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 380)
-                    .clipShape(RoundedRectangle(cornerRadius: 32))
+                ZStack {
+                    SpriteView(scene: scene, options: [.allowsTransparency])
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 380)
+
+                    VStack {
+                        Spacer()
+                        LinearGradient(
+                            colors: [.clear, Color(.systemGroupedBackground)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .frame(height: 80)
+                    }
+                    .allowsHitTesting(false)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 380)
             } else {
                 ProgressView()
                     .frame(maxWidth: .infinity)
@@ -115,7 +129,7 @@ struct SproutTabView: View {
     private func setupScene() {
         if sproutScene == nil {
             let scene = SproutScene(size: CGSize(width: 400, height: 400))
-            scene.scaleMode = .aspectFit
+            scene.scaleMode = .resizeFill
             scene.backgroundColor = .clear
             sproutScene = scene
         }
@@ -304,6 +318,7 @@ struct SproutTabView: View {
     }
 
     private func ensurePlantExists() {
+        SproutGrowthService.removeDuplicateActivePlants(from: modelContext)
         if activePlants.isEmpty {
             let service = SproutGrowthService(modelContext: modelContext)
             _ = service.getActivePlant()

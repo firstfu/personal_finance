@@ -94,6 +94,9 @@ struct personal_financeApp: App {
                     DefaultCategories.seed(into: context)
                     DefaultCategories.seedAccounts(into: context)
 
+                    // Remove duplicate active plants (CloudKit sync may cause duplicates)
+                    SproutGrowthService.removeDuplicateActivePlants(from: context)
+
                     // Seed initial sprout plant if none exists
                     let sproutService = SproutGrowthService(modelContext: context)
                     _ = sproutService.getActivePlant()
@@ -107,6 +110,7 @@ struct personal_financeApp: App {
                         object: nil,
                         queue: .main
                     ) { _ in
+                        SproutGrowthService.removeDuplicateActivePlants(from: context)
                         WidgetDataSync.updateSnapshot(from: context)
                     }
                 }

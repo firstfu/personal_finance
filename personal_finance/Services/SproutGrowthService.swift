@@ -124,6 +124,27 @@ struct SproutGrowthService {
         return Calendar.current.isDateInToday(lastWatered)
     }
 
+    /// 移除重複的活躍植物（CloudKit 同步後可能產生重複）
+    /// 保留成長點數最高的植物，同分則保留較早建立的
+    static func removeDuplicateActivePlants(from context: ModelContext) {
+        let descriptor = FetchDescriptor<SproutPlant>(
+            predicate: #Predicate { $0.isActive == true }
+        )
+        guard let activePlants = try? context.fetch(descriptor),
+              activePlants.count > 1 else { return }
+
+        let sorted = activePlants.sorted {
+            if $0.growthPoints != $1.growthPoints {
+                return $0.growthPoints > $1.growthPoints
+            }
+            return $0.createdAt < $1.createdAt
+        }
+        for plant in sorted.dropFirst() {
+            context.delete(plant)
+        }
+        try? context.save()
+    }
+
     /// 根據成長點數計算階段
     static func stageForPoints(_ points: Int) -> Int {
         switch points {
