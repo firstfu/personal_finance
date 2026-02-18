@@ -73,6 +73,33 @@ final class GroundNode: SKNode {
         }
     }
 
+    // MARK: - Color Scheme
+
+    func updateColorScheme(isDark: Bool) {
+        guard let hill = children.first as? SKShapeNode else { return }
+
+        if isDark {
+            hill.fillColor = SKColor(red: 0.18, green: 0.28, blue: 0.15, alpha: 1.0)
+            hill.strokeColor = SKColor(red: 0.12, green: 0.20, blue: 0.10, alpha: 1.0)
+        } else {
+            hill.fillColor = SKColor(red: 0.6, green: 0.82, blue: 0.5, alpha: 1.0)
+            hill.strokeColor = SKColor(red: 0.5, green: 0.72, blue: 0.4, alpha: 1.0)
+        }
+
+        // Update highlight line (second child)
+        if children.count > 1, let highlight = children[1] as? SKShapeNode {
+            highlight.strokeColor = isDark
+                ? SKColor(red: 0.25, green: 0.38, blue: 0.22, alpha: 0.3)
+                : SKColor(red: 0.7, green: 0.88, blue: 0.6, alpha: 0.6)
+        }
+
+        // Update flower opacity (children after hill and highlight)
+        for i in 2..<children.count {
+            let flowerNode = children[i]
+            flowerNode.alpha = isDark ? 0.35 : 1.0
+        }
+    }
+
     private func createTinyFlower(color: SKColor) -> SKNode {
         let node = SKNode()
         let petalRadius: CGFloat = 3

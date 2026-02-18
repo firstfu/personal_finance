@@ -362,6 +362,7 @@ final class SproutScene: SKScene {
     /// Updates the scene for the current color scheme (light/dark).
     func updateColorScheme(isDark: Bool) {
         backgroundNode?.updateColorScheme(isDark: isDark)
+        groundNode?.updateColorScheme(isDark: isDark)
     }
 
     /// Set expression externally (e.g., sleeping when already watered)

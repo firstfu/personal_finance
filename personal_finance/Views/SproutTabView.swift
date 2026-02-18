@@ -29,8 +29,9 @@ struct SproutTabView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
-                    // 豆芽動畫區域
+                    // 豆芽動畫區域（突破水平 padding，全寬顯示）
                     plantVisual
+                        .padding(.horizontal, -AppTheme.horizontalPadding)
                         .padding(.top, 20)
 
                     // 成長進度
