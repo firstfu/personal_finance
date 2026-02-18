@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>記帳小幫手 - 免費養成理財記帳 App</title>
+  <meta name="description" content="記帳也能養豆芽！台灣首款結合植物養成的免費記帳 App。完全免費、無廣告、無內購，50+ 內建分類、iCloud 跨裝置同步。">
+  <meta name="keywords" content="記帳,理財,免費,豆芽,養成,記帳App,個人財務,iOS,iPad">
+  <meta property="og:title" content="記帳小幫手 - 免費養成理財記帳">
+  <meta property="og:description" content="記帳也能養豆芽！每天記一筆，看著你的小豆芽從種子長到開花結果。完全免費、無廣告。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://firstfu.github.io/personal_finance/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-50: #f1f8e9;
+      --green-100: #dcedc8;
+      --green-200: #c5e1a5;
+      --green-300: #aed581;
+      --green-400: #8BC34A;
+      --green-600: #558b2f;
+      --green-700: #2E7D32;
+      --green-800: #1b5e20;
+      --green-900: #0d3b0f;
+      --cream: #fefdf5;
+      --warm-gray: #5a5a52;
+      --light-gray: #f5f5f0;
+      --text-primary: #1a2e1a;
+      --text-secondary: #4a5a4a;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 20px rgba(45,125,50,0.1);
+      --shadow-lg: 0 12px 40px rgba(45,125,50,0.15);
+      --radius: 20px;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text-primary);
+      background: var(--cream);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* === NAV === */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(254,253,245,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(45,125,50,0.08);
+      transition: box-shadow 0.3s;
+    }
+    nav.scrolled { box-shadow: var(--shadow-md); }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 14px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 1.1rem; color: var(--green-700);
+      text-decoration: none;
+    }
+    .nav-brand .sprout-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--green-400), var(--green-700));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; color: white;
+    }
+    .nav-links { display: flex; gap: 28px; align-items: center; }
+    .nav-links a {
+      color: var(--text-secondary); text-decoration: none;
+      font-size: 0.92rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--green-700); }
+    .nav-cta {
+      background: var(--green-700) !important; color: white !important;
+      padding: 8px 20px; border-radius: 50px;
+      font-weight: 600 !important; font-size: 0.88rem !important;
+      transition: all 0.3s !important;
+    }
+    .nav-cta:hover { background: var(--green-800) !important; transform: translateY(-1px); }
+
+    /* === HERO === */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -200px; right: -200px;
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(139,195,74,0.12) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: float 8s ease-in-out infinite;
+    }
+    .hero::after {
+      content: '';
+      position: absolute; bottom: -100px; left: -150px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(46,125,50,0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: float 10s ease-in-out infinite reverse;
+    }
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(30px, -20px); }
+    }
+    .hero-inner {
+      max-width: 1200px; margin: 0 auto; width: 100%;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: center;
+      position: relative; z-index: 1;
+    }
+    .hero-content { animation: fadeInUp 0.8s ease-out; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--green-50);
+      border: 1px solid var(--green-200);
+      padding: 6px 16px; border-radius: 50px;
+      font-size: 0.85rem; color: var(--green-700);
+      font-weight: 500; margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 5vw, 3.6rem);
+      font-weight: 900;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+    }
+    .hero h1 .highlight {
+      background: linear-gradient(135deg, var(--green-400), var(--green-700));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-desc {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      margin-bottom: 36px;
+      max-width: 500px;
+      font-weight: 300;
+    }
+    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--green-700);
+      color: white; text-decoration: none;
+      padding: 16px 32px; border-radius: 50px;
+      font-size: 1.05rem; font-weight: 600;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(46,125,50,0.3);
+    }
+    .btn-primary:hover {
+      background: var(--green-800);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(46,125,50,0.4);
+    }
+    .btn-primary svg { width: 22px; height: 22px; }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--text-secondary); text-decoration: none;
+      padding: 16px 24px; border-radius: 50px;
+      font-size: 1rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .btn-secondary:hover { color: var(--green-700); }
+    .hero-stats {
+      display: flex; gap: 32px; margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid rgba(46,125,50,0.1);
+    }
+    .hero-stat h3 {
+      font-size: 1.6rem; font-weight: 900;
+      color: var(--green-700);
+    }
+    .hero-stat p {
+      font-size: 0.85rem; color: var(--text-secondary);
+      font-weight: 400;
+    }
+    .hero-visual {
+      display: flex; justify-content: center; align-items: center;
+      position: relative;
+      animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+    .phone-mockup {
+      width: 300px; height: 620px;
+      background: linear-gradient(160deg, #ffffff, #f8fdf2);
+      border-radius: 44px;
+      border: 8px solid #1a1a1a;
+      box-shadow: var(--shadow-lg), inset 0 0 0 2px rgba(255,255,255,0.5);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .phone-mockup .phone-screen {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, #e8f5e9 0%, #f1f8e9 30%, #ffffff 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 40px 20px;
+    }
+    .phone-sprout {
+      font-size: 80px;
+      animation: grow 3s ease-in-out infinite;
+    }
+    @keyframes grow {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      25% { transform: scale(1.05) rotate(-2deg); }
+      75% { transform: scale(1.05) rotate(2deg); }
+    }
+    .phone-app-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--green-700);
+    }
+    .phone-balance {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--text-primary);
+    }
+    .phone-bar-chart {
+      display: flex; align-items: flex-end; gap: 8px;
+      height: 80px;
+    }
+    .phone-bar {
+      width: 24px; border-radius: 6px 6px 0 0;
+      animation: barGrow 1.5s ease-out both;
+    }
+    .phone-bar:nth-child(1) { height: 40px; background: var(--green-200); animation-delay: 0.3s; }
+    .phone-bar:nth-child(2) { height: 60px; background: var(--green-300); animation-delay: 0.4s; }
+    .phone-bar:nth-child(3) { height: 35px; background: var(--green-200); animation-delay: 0.5s; }
+    .phone-bar:nth-child(4) { height: 75px; background: var(--green-400); animation-delay: 0.6s; }
+    .phone-bar:nth-child(5) { height: 50px; background: var(--green-300); animation-delay: 0.7s; }
+    .phone-bar:nth-child(6) { height: 65px; background: var(--green-400); animation-delay: 0.8s; }
+    @keyframes barGrow {
+      from { height: 0; }
+    }
+    .floating-card {
+      position: absolute;
+      background: white;
+      border-radius: 16px;
+      padding: 14px 18px;
+      box-shadow: var(--shadow-lg);
+      font-size: 0.85rem;
+      animation: floatCard 6s ease-in-out infinite;
+    }
+    .floating-card.card-1 {
+      top: 60px; right: -20px;
+      animation-delay: 0s;
+    }
+    .floating-card.card-2 {
+      bottom: 100px; left: -30px;
+      animation-delay: 2s;
+    }
+    @keyframes floatCard {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .card-label { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 2px; }
+    .card-value { font-weight: 700; color: var(--green-700); }
+    .card-value.expense { color: #e53935; }
+
+    /* === FEATURES === */
+    .features {
+      padding: 120px 24px;
+      background: white;
+      position: relative;
+    }
+    .features::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--green-200), transparent);
+    }
+    .section-header {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 72px;
+    }
+    .section-tag {
+      display: inline-block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--green-700);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+    .section-header h2 {
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-weight: 900;
+      line-height: 1.3;
+      margin-bottom: 16px;
+    }
+    .section-header p {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      font-weight: 300;
+    }
+    .features-grid {
+      max-width: 1200px; margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+    .feature-card {
+      background: var(--cream);
+      border-radius: var(--radius);
+      padding: 36px 28px;
+      border: 1px solid rgba(46,125,50,0.06);
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::after {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 3px;
+      background: linear-gradient(90deg, var(--green-400), var(--green-700));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--green-200);
+    }
+    .feature-card:hover::after { transform: scaleX(1); }
+    .feature-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .feature-icon.green { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); }
+    .feature-icon.blue { background: linear-gradient(135deg, #e3f2fd, #bbdefb); }
+    .feature-icon.orange { background: linear-gradient(135deg, #fff3e0, #ffe0b2); }
+    .feature-icon.purple { background: linear-gradient(135deg, #f3e5f5, #e1bee7); }
+    .feature-icon.teal { background: linear-gradient(135deg, #e0f2f1, #b2dfdb); }
+    .feature-icon.pink { background: linear-gradient(135deg, #fce4ec, #f8bbd0); }
+    .feature-card h3 {
+      font-size: 1.15rem; font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    /* === SPROUT SECTION === */
+    .sprout-section {
+      padding: 120px 24px;
+      background: linear-gradient(180deg, var(--green-50) 0%, var(--cream) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .sprout-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: center;
+    }
+    .sprout-visual {
+      display: flex; justify-content: center;
+    }
+    .growth-stages {
+      display: flex; align-items: flex-end; gap: 20px;
+      padding: 40px;
+      background: white;
+      border-radius: 24px;
+      box-shadow: var(--shadow-md);
+    }
+    .stage {
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      opacity: 0;
+      animation: stageIn 0.5s ease-out forwards;
+    }
+    .stage:nth-child(1) { animation-delay: 0.2s; }
+    .stage:nth-child(2) { animation-delay: 0.4s; }
+    .stage:nth-child(3) { animation-delay: 0.6s; }
+    .stage:nth-child(4) { animation-delay: 0.8s; }
+    .stage:nth-child(5) { animation-delay: 1.0s; }
+    @keyframes stageIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .stage-emoji { font-size: 2.4rem; }
+    .stage-label {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .stage-bar {
+      width: 36px;
+      border-radius: 8px 8px 0 0;
+      background: linear-gradient(180deg, var(--green-400), var(--green-600));
+    }
+    .sprout-content h2 {
+      font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+      font-weight: 900;
+      margin-bottom: 20px;
+      line-height: 1.3;
+    }
+    .sprout-content > p {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      margin-bottom: 32px;
+      font-weight: 300;
+    }
+    .sprout-steps {
+      display: flex; flex-direction: column; gap: 20px;
+    }
+    .sprout-step {
+      display: flex; gap: 16px; align-items: flex-start;
+    }
+    .step-num {
+      width: 32px; height: 32px; flex-shrink: 0;
+      background: var(--green-700);
+      color: white; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 700;
+    }
+    .step-text h4 { font-size: 1rem; font-weight: 600; margin-bottom: 2px; }
+    .step-text p { color: var(--text-secondary); font-size: 0.9rem; }
+
+    /* === FREE SECTION === */
+    .free-section {
+      padding: 100px 24px;
+      background: var(--green-900);
+      color: white;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .free-section::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .free-inner {
+      max-width: 700px; margin: 0 auto;
+      position: relative; z-index: 1;
+    }
+    .free-section h2 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 900;
+      margin-bottom: 20px;
+    }
+    .free-section p {
+      font-size: 1.1rem;
+      opacity: 0.85;
+      margin-bottom: 40px;
+      font-weight: 300;
+    }
+    .free-tags {
+      display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+    .free-tag {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 10px 24px;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    .btn-white {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: white;
+      color: var(--green-800);
+      padding: 16px 36px;
+      border-radius: 50px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .btn-white:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+
+    /* === FOOTER === */
+    footer {
+      padding: 60px 24px 30px;
+      background: var(--light-gray);
+      border-top: 1px solid rgba(46,125,50,0.08);
+    }
+    .footer-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: 2fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+    .footer-brand h3 {
+      font-size: 1.2rem; font-weight: 700;
+      color: var(--green-700);
+      margin-bottom: 12px;
+    }
+    .footer-brand p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      max-width: 320px;
+    }
+    .footer-links h4 {
+      font-size: 0.88rem; font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+    .footer-links a {
+      display: block;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 4px 0;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--green-700); }
+    .footer-bottom {
+      max-width: 1200px; margin: 0 auto;
+      padding-top: 24px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.82rem; color: var(--text-secondary);
+    }
+
+    /* === ANIMATIONS === */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .reveal.visible {
+      opacity: 1; transform: translateY(0);
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; text-align: center; }
+      .hero-desc { margin-left: auto; margin-right: auto; }
+      .hero-actions { justify-content: center; }
+      .hero-stats { justify-content: center; }
+      .hero-visual { margin-top: 40px; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .sprout-inner { grid-template-columns: 1fr; }
+      .sprout-visual { order: -1; }
+      .footer-inner { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .features-grid { grid-template-columns: 1fr; }
+      .nav-links a:not(.nav-cta) { display: none; }
+      .hero-stats { gap: 20px; }
+      .phone-mockup { width: 240px; height: 500px; }
+      .floating-card { display: none; }
+      .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <div class="nav-inner">
+      <a href="#" class="nav-brand">
+        <span class="sprout-icon">&#127793;</span>
+        記帳小幫手
+      </a>
+      <div class="nav-links">
+        <a href="#features">功能特色</a>
+        <a href="#sprout">豆芽養成</a>
+        <a href="#download">下載</a>
+        <a href="#" class="nav-cta" onclick="window.open('https://apps.apple.com/app/id6759344523','_blank')">免費下載</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <div class="hero-badge">&#127793; 台灣首款植物養成記帳 App</div>
+        <h1>記帳也能<br><span class="highlight">養豆芽</span></h1>
+        <p class="hero-desc">
+          每天記一筆，看著你的小豆芽從種子長到開花結果。
+          養成記帳好習慣，就從今天的第一筆開始。
+        </p>
+        <div class="hero-actions">
+          <a href="https://apps.apple.com/app/id6759344523" target="_blank" class="btn-primary">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            App Store &#19979;&#36617;
+          </a>
+          <a href="#features" class="btn-secondary">
+            &#8595; &#20102;&#35299;&#26356;&#22810;
+          </a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <h3>50+</h3>
+            <p>&#20839;&#24314;&#20998;&#39006;</p>
+          </div>
+          <div class="hero-stat">
+            <h3>100%</h3>
+            <p>&#23436;&#20840;&#20813;&#36027;</p>
+          </div>
+          <div class="hero-stat">
+            <h3>0</h3>
+            <p>&#24291;&#21578;&#33287;&#20839;&#36092;</p>
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="phone-mockup">
+          <div class="phone-screen">
+            <div class="phone-sprout">&#127793;</div>
+            <div class="phone-app-name">&#35352;&#24115;&#23567;&#24171;&#25163;</div>
+            <div class="phone-balance">NT$ 42,860</div>
+            <div class="phone-bar-chart">
+              <div class="phone-bar"></div>
+              <div class="phone-bar"></div>
+              <div class="phone-bar"></div>
+              <div class="phone-bar"></div>
+              <div class="phone-bar"></div>
+              <div class="phone-bar"></div>
+            </div>
+          </div>
+        </div>
+        <div class="floating-card card-1">
+          <div class="card-label">&#20170;&#26085;&#25903;&#20986;</div>
+          <div class="card-value expense">-NT$ 385</div>
+        </div>
+        <div class="floating-card card-2">
+          <div class="card-label">&#36899;&#32396;&#35352;&#24115;</div>
+          <div class="card-value">7 &#22825; &#127881;</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="section-header reveal">
+      <div class="section-tag">&#21151;&#33021;&#29305;&#33394;</div>
+      <h2>&#35731;&#35352;&#24115;&#35722;&#24471;&#31777;&#21934;&#21448;&#26377;&#36259;</h2>
+      <p>&#24375;&#22823;&#30340;&#35352;&#24115;&#24037;&#20855;&#65292;&#37197;&#21512;&#29544;&#29305;&#30340;&#35910;&#33469;&#39178;&#25104;&#27231;&#21046;&#65292;&#35731;&#20320;&#27599;&#22825;&#37117;&#24819;&#25171;&#38283; App</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon green">&#127793;</div>
+        <h3>&#35910;&#33469;&#39178;&#25104;</h3>
+        <p>&#27599;&#27425;&#35352;&#24115;&#37117;&#33021;&#28550;&#27700;&#65292;&#30475;&#33879;&#35910;&#33469;&#24478;&#31278;&#23376;&#38263;&#21040;&#38283;&#33457;&#32080;&#26524;&#12290;5 &#20491;&#25104;&#38263;&#38542;&#27573;&#65292;&#25910;&#25104;&#24460;&#21487;&#25910;&#38598;&#22294;&#37969;&#12290;</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon blue">&#128202;</div>
+        <h3>&#35222;&#35258;&#21270;&#20998;&#26512;</h3>
+        <p>&#25910;&#25903;&#36264;&#21218;&#25240;&#32218;&#22294;&#12289;&#20998;&#39006;&#22291;&#39173;&#22294;&#65292;&#25903;&#25588;&#36913;&#12289;&#26376;&#12289;&#24180;&#19977;&#31278;&#26178;&#38291;&#32173;&#24230;&#65292;&#28165;&#26970;&#25484;&#25569;&#28040;&#36027;&#32722;&#24931;&#12290;</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon orange">&#128179;</div>
+        <h3>&#22810;&#24115;&#25142;&#31649;&#29702;</h3>
+        <p>&#29694;&#37329;&#12289;&#37504;&#34892;&#12289;&#20449;&#29992;&#21345;&#12289;&#38651;&#23376;&#37666;&#21253;&#19968;&#27425;&#25484;&#25569;&#12290;&#25903;&#25588;&#36681;&#24115;&#25805;&#20316;&#65292;&#36039;&#29986;&#29376;&#27841;&#19968;&#30446;&#20102;&#28982;&#12290;</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon purple">&#9729;&#65039;</div>
+        <h3>iCloud &#21516;&#27493;</h3>
+        <p>&#36039;&#26009;&#33258;&#21205;&#36879;&#36942; iCloud &#22312;&#25152;&#26377; Apple &#35037;&#32622;&#38291;&#21516;&#27493;&#12290;iPhone &#35352;&#24115;&#65292;iPad &#30475;&#22577;&#34920;&#65292;&#28961;&#32299;&#20999;&#25563;&#12290;</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon teal">&#128248;</div>
+        <h3>Widget &#23567;&#24037;&#20855;</h3>
+        <p>3 &#31278;&#23610;&#23544;&#30340;&#20027;&#30059;&#38754;&#23567;&#24037;&#20855;&#65292;&#19981;&#29992;&#25171;&#38283; App &#23601;&#33021;&#21363;&#26178;&#26597;&#30475;&#26412;&#26376;&#25910;&#25903;&#27010;&#27841;&#12290;</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon pink">&#128190;</div>
+        <h3>&#20633;&#20221;&#33287;&#21295;&#20986;</h3>
+        <p>JSON &#26684;&#24335;&#23436;&#25972;&#20633;&#20221;&#36996;&#21407;&#65292;CSV &#21295;&#20986;&#20132;&#26131;&#32000;&#37636;&#12290;&#20320;&#30340;&#36039;&#26009;&#65292;&#23436;&#20840;&#30001;&#20320;&#25484;&#25511;&#12290;</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SPROUT -->
+  <section class="sprout-section" id="sprout">
+    <div class="sprout-inner">
+      <div class="sprout-visual reveal">
+        <div class="growth-stages">
+          <div class="stage">
+            <div class="stage-emoji">&#x1F331;</div>
+            <div class="stage-bar" style="height: 20px;"></div>
+            <div class="stage-label">&#31278;&#23376;</div>
+          </div>
+          <div class="stage">
+            <div class="stage-emoji">&#127794;</div>
+            <div class="stage-bar" style="height: 40px;"></div>
+            <div class="stage-label">&#30332;&#33469;</div>
+          </div>
+          <div class="stage">
+            <div class="stage-emoji">&#127795;</div>
+            <div class="stage-bar" style="height: 60px;"></div>
+            <div class="stage-label">&#23567;&#33495;</div>
+          </div>
+          <div class="stage">
+            <div class="stage-emoji">&#127796;</div>
+            <div class="stage-bar" style="height: 80px;"></div>
+            <div class="stage-label">&#33538;&#30427;</div>
+          </div>
+          <div class="stage">
+            <div class="stage-emoji">&#127800;</div>
+            <div class="stage-bar" style="height: 100px;"></div>
+            <div class="stage-label">&#38283;&#33457;&#32080;&#26524;</div>
+          </div>
+        </div>
+      </div>
+      <div class="sprout-content reveal">
+        <h2>&#35352;&#24115;&#39178;&#35910;&#33469;<br>&#35731;&#32722;&#24931;&#33258;&#28982;&#39178;&#25104;</h2>
+        <p>&#19981;&#20877;&#38752;&#24847;&#24535;&#21147;&#22533;&#25345;&#35352;&#24115;&#12290;&#27599;&#27425;&#35352;&#24115;&#37117;&#26159;&#19968;&#27425;&#28550;&#28748;&#65292;&#30475;&#33879;&#35910;&#33469;&#19968;&#22825;&#22825;&#38263;&#22823;&#65292;&#35352;&#24115;&#35722;&#25104;&#27599;&#22825;&#30340;&#23567;&#26399;&#24453;&#12290;</p>
+        <div class="sprout-steps">
+          <div class="sprout-step">
+            <div class="step-num">1</div>
+            <div class="step-text">
+              <h4>&#35352;&#19968;&#31558;&#24115;</h4>
+              <p>&#36664;&#20837;&#20170;&#22825;&#30340;&#25910;&#25903;&#65292;&#21482;&#35201;&#24190;&#31186;&#37912;</p>
+            </div>
+          </div>
+          <div class="sprout-step">
+            <div class="step-num">2</div>
+            <div class="step-text">
+              <h4>&#28550;&#28748;&#35910;&#33469;</h4>
+              <p>&#33258;&#21205;&#29554;&#24471;&#25104;&#38263;&#40670;&#25976;&#65292;&#36899;&#32396;&#22825;&#25976;&#36234;&#22810;&#29518;&#21237;&#36234;&#39640;</p>
+            </div>
+          </div>
+          <div class="sprout-step">
+            <div class="step-num">3</div>
+            <div class="step-text">
+              <h4>&#25910;&#25104;&#22294;&#37969;</h4>
+              <p>&#35910;&#33469;&#38263;&#22823;&#24460;&#25910;&#25104;&#65292;&#25910;&#38598;&#20320;&#30340;&#23560;&#23660;&#22294;&#37969;</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FREE -->
+  <section class="free-section" id="download">
+    <div class="free-inner">
+      <h2>&#23436;&#20840;&#20813;&#36027;<br>&#35488;&#24847;&#28415;&#28415;</h2>
+      <p>&#25152;&#26377;&#21151;&#33021;&#23436;&#20840;&#20813;&#36027;&#65292;&#27794;&#26377;&#20219;&#20309;&#38577;&#34255;&#25910;&#36027;&#12290;&#20320;&#30340;&#36039;&#26009;&#21482;&#23384;&#22312;&#20320;&#30340;&#35037;&#32622;&#21644; iCloud&#65292;&#25105;&#20497;&#19981;&#25910;&#38598;&#20219;&#20309;&#20491;&#20154;&#36039;&#35338;&#12290;</p>
+      <div class="free-tags">
+        <span class="free-tag">&#28961;&#24291;&#21578;</span>
+        <span class="free-tag">&#28961;&#20839;&#36092;</span>
+        <span class="free-tag">&#28961;&#35330;&#38321;</span>
+        <span class="free-tag">&#28961;&#38656;&#35387;&#20874;</span>
+      </div>
+      <a href="https://apps.apple.com/app/id6759344523" target="_blank" class="btn-white">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        &#31435;&#21363;&#20813;&#36027;&#19979;&#36617;
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <h3>&#127793; &#35352;&#24115;&#23567;&#24171;&#25163;</h3>
+        <p>&#29992;&#19968;&#38982;&#35910;&#33469;&#30340;&#21147;&#37327;&#65292;&#38506;&#20320;&#39178;&#25104;&#21463;&#29992;&#19968;&#29983;&#30340;&#29702;&#36001;&#22909;&#32722;&#24931;&#12290;</p>
+      </div>
+      <div class="footer-links">
+        <h4>&#27861;&#24459;&#36039;&#35338;</h4>
+        <a href="./privacy.html">&#38577;&#31169;&#27402;&#25919;&#31574;</a>
+        <a href="./terms.html">&#20351;&#29992;&#26781;&#27454;</a>
+      </div>
+      <div class="footer-links">
+        <h4>&#25903;&#25588;</h4>
+        <a href="mailto:eee03199288@gmail.com">&#32879;&#32097;&#25105;&#20497;</a>
+        <a href="https://github.com/firstfu/personal_finance" target="_blank">GitHub</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 FirstFu. All rights reserved.</span>
+      <span>Made with &#127793; in Taiwan</span>
+    </div>
+  </footer>
+
+  <script>
+    // Nav scroll effect
+    window.addEventListener('scroll', () => {
+      document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 20);
+    });
+    // Reveal on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
