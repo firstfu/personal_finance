@@ -2,8 +2,6 @@
 //  GroundNode.swift
 //  personal_finance
 //
-//  Created on 2026-02-18.
-//
 
 import SpriteKit
 
@@ -14,100 +12,83 @@ final class GroundNode: SKNode {
         self.sceneSize = sceneSize
         super.init()
         self.zPosition = 1
-        setupGround()
-        setupPot()
+        setupGrassHill()
+        setupFlowerDecorations()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func setupGround() {
+    private func setupGrassHill() {
         let w = sceneSize.width
-        let groundY = sceneSize.height * 0.22
+        let hillY = sceneSize.height * 0.18
 
-        // Ground filled shape
-        let groundPath = CGMutablePath()
-        groundPath.move(to: CGPoint(x: 0, y: 0))
-        groundPath.addLine(to: CGPoint(x: 0, y: groundY * 0.6))
-        groundPath.addQuadCurve(
-            to: CGPoint(x: w, y: groundY * 0.6),
-            control: CGPoint(x: w / 2, y: groundY * 1.1)
+        // Soft green grass hill
+        let hillPath = CGMutablePath()
+        hillPath.move(to: CGPoint(x: 0, y: 0))
+        hillPath.addLine(to: CGPoint(x: 0, y: hillY * 0.5))
+        hillPath.addQuadCurve(
+            to: CGPoint(x: w, y: hillY * 0.5),
+            control: CGPoint(x: w / 2, y: hillY * 1.15)
         )
-        groundPath.addLine(to: CGPoint(x: w, y: 0))
-        groundPath.closeSubpath()
+        hillPath.addLine(to: CGPoint(x: w, y: 0))
+        hillPath.closeSubpath()
 
-        let groundShape = SKShapeNode(path: groundPath)
-        groundShape.fillColor = UIColor(red: 0.55, green: 0.38, blue: 0.22, alpha: 1.0)
-        groundShape.strokeColor = UIColor(red: 0.45, green: 0.30, blue: 0.18, alpha: 1.0)
-        groundShape.lineWidth = 1.5
-        addChild(groundShape)
+        let hill = SKShapeNode(path: hillPath)
+        hill.fillColor = SKColor(red: 0.6, green: 0.82, blue: 0.5, alpha: 1.0)
+        hill.strokeColor = SKColor(red: 0.5, green: 0.72, blue: 0.4, alpha: 1.0)
+        hill.lineWidth = 2.0
+        addChild(hill)
 
-        // Grass line on top
-        let grassPath = CGMutablePath()
-        grassPath.move(to: CGPoint(x: 0, y: groundY * 0.6))
-        grassPath.addQuadCurve(
-            to: CGPoint(x: w, y: groundY * 0.6),
-            control: CGPoint(x: w / 2, y: groundY * 1.1)
+        // Lighter grass highlight on top
+        let highlightPath = CGMutablePath()
+        highlightPath.move(to: CGPoint(x: w * 0.15, y: hillY * 0.55))
+        highlightPath.addQuadCurve(
+            to: CGPoint(x: w * 0.85, y: hillY * 0.55),
+            control: CGPoint(x: w / 2, y: hillY * 1.05)
         )
-
-        let grassLine = SKShapeNode(path: grassPath)
-        grassLine.strokeColor = UIColor(red: 0.4, green: 0.65, blue: 0.2, alpha: 1.0)
-        grassLine.lineWidth = 4
-        grassLine.lineCap = .round
-        grassLine.fillColor = .clear
-        addChild(grassLine)
+        let highlight = SKShapeNode(path: highlightPath)
+        highlight.strokeColor = SKColor(red: 0.7, green: 0.88, blue: 0.6, alpha: 0.6)
+        highlight.lineWidth = 3.0
+        highlight.lineCap = .round
+        highlight.fillColor = .clear
+        addChild(highlight)
     }
 
-    private func setupPot() {
-        let centerX = sceneSize.width / 2
-        let baseY = sceneSize.height * 0.22
+    private func setupFlowerDecorations() {
+        let hillY = sceneSize.height * 0.18
 
-        let potWidth: CGFloat = 80
-        let topHalf: CGFloat = 40
-        let bottomHalf = potWidth * 0.35
-        let potHeight: CGFloat = 55
+        let flowerData: [(CGFloat, CGFloat, SKColor)] = [
+            (sceneSize.width * 0.15, hillY * 0.7, SKColor(red: 1.0, green: 0.7, blue: 0.7, alpha: 0.8)),
+            (sceneSize.width * 0.82, hillY * 0.65, SKColor(red: 0.8, green: 0.7, blue: 1.0, alpha: 0.8)),
+            (sceneSize.width * 0.35, hillY * 0.85, SKColor(red: 1.0, green: 0.9, blue: 0.5, alpha: 0.8)),
+            (sceneSize.width * 0.7, hillY * 0.8, SKColor(red: 0.7, green: 0.9, blue: 1.0, alpha: 0.8)),
+        ]
 
-        // Pot trapezoid shape
-        let potPath = CGMutablePath()
-        potPath.move(to: CGPoint(x: centerX - topHalf, y: baseY + potHeight))
-        potPath.addLine(to: CGPoint(x: centerX - bottomHalf, y: baseY))
-        potPath.addLine(to: CGPoint(x: centerX + bottomHalf, y: baseY))
-        potPath.addLine(to: CGPoint(x: centerX + topHalf, y: baseY + potHeight))
-        potPath.closeSubpath()
+        for (x, y, color) in flowerData {
+            let flower = createTinyFlower(color: color)
+            flower.position = CGPoint(x: x, y: y)
+            addChild(flower)
+        }
+    }
 
-        let potShape = SKShapeNode(path: potPath)
-        potShape.fillColor = UIColor(red: 0.76, green: 0.50, blue: 0.32, alpha: 1.0)
-        potShape.strokeColor = UIColor(red: 0.60, green: 0.38, blue: 0.22, alpha: 1.0)
-        potShape.lineWidth = 1.5
-        addChild(potShape)
-
-        // Pot rim
-        let rimWidth = topHalf + 2.5
-        let rimHeight: CGFloat = 8
-
-        let rimPath = CGMutablePath()
-        rimPath.move(to: CGPoint(x: centerX - rimWidth, y: baseY + potHeight))
-        rimPath.addLine(to: CGPoint(x: centerX - topHalf, y: baseY + potHeight + rimHeight))
-        rimPath.addLine(to: CGPoint(x: centerX + topHalf, y: baseY + potHeight + rimHeight))
-        rimPath.addLine(to: CGPoint(x: centerX + rimWidth, y: baseY + potHeight))
-        rimPath.closeSubpath()
-
-        let rimShape = SKShapeNode(path: rimPath)
-        rimShape.fillColor = UIColor(red: 0.70, green: 0.46, blue: 0.28, alpha: 1.0)
-        rimShape.strokeColor = UIColor(red: 0.60, green: 0.38, blue: 0.22, alpha: 1.0)
-        rimShape.lineWidth = 1.5
-        addChild(rimShape)
-
-        // Soil ellipse
-        let soilWidth = topHalf * 2
-        let soilHeight: CGFloat = 12
-
-        let soilShape = SKShapeNode(ellipseOf: CGSize(width: soilWidth, height: soilHeight))
-        soilShape.position = CGPoint(x: centerX, y: baseY + potHeight + rimHeight - 2)
-        soilShape.fillColor = UIColor(red: 0.35, green: 0.25, blue: 0.15, alpha: 1.0)
-        soilShape.strokeColor = .clear
-        soilShape.zPosition = 0.1
-        addChild(soilShape)
+    private func createTinyFlower(color: SKColor) -> SKNode {
+        let node = SKNode()
+        let petalRadius: CGFloat = 3
+        let offsets: [(CGFloat, CGFloat)] = [(0, petalRadius), (0, -petalRadius), (petalRadius, 0), (-petalRadius, 0)]
+        for (dx, dy) in offsets {
+            let petal = SKShapeNode(circleOfRadius: petalRadius)
+            petal.fillColor = color
+            petal.strokeColor = .clear
+            petal.position = CGPoint(x: dx, y: dy)
+            node.addChild(petal)
+        }
+        let center = SKShapeNode(circleOfRadius: 2)
+        center.fillColor = SKColor(red: 1.0, green: 0.9, blue: 0.4, alpha: 1.0)
+        center.strokeColor = .clear
+        center.zPosition = 0.1
+        node.addChild(center)
+        return node
     }
 }
