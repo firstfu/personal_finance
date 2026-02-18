@@ -49,6 +49,7 @@ import Charts
 struct AnalyticsView: View {
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @AppStorage("showDemoData") private var showDemoData = false
+    @Query(sort: \Account.sortOrder) private var accounts: [Account]
 
     @State private var periodState = TimePeriodState()
     @State private var selectedDate: Date?
@@ -100,6 +101,10 @@ struct AnalyticsView: View {
         incomes.reduce(0) { $0 + $1.amount }
     }
 
+    private var totalBalance: Decimal {
+        accounts.reduce(Decimal.zero) { $0 + (showDemoData ? $1.demoBalance : $1.currentBalance) }
+    }
+
     private var spendingSummaryCard: some View {
         VStack(spacing: 12) {
             HStack {
@@ -134,6 +139,17 @@ struct AnalyticsView: View {
                 Text(CurrencyFormatter.format(net))
                     .font(AppTheme.amountFont)
                     .foregroundStyle(net >= 0 ? AppTheme.income : AppTheme.expense)
+            }
+
+            Divider()
+
+            VStack(spacing: 4) {
+                Text("總資產")
+                    .font(AppTheme.captionFont)
+                    .foregroundStyle(AppTheme.secondaryText)
+                Text(CurrencyFormatter.format(totalBalance))
+                    .font(AppTheme.amountFont)
+                    .foregroundStyle(totalBalance >= 0 ? AppTheme.income : AppTheme.expense)
             }
         }
         .frame(maxWidth: .infinity)
