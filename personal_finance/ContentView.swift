@@ -26,6 +26,7 @@ struct ContentView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @AppStorage("appColorScheme") private var appColorScheme = "system"
     @AppStorage("showDemoData") private var showDemoData = false
+    @AppStorage("showDemoBanner") private var showDemoBanner = true
     @State private var selectedTab = 0
 
     init() {
@@ -75,7 +76,7 @@ struct ContentView: View {
 
     private var mainTabView: some View {
         VStack(spacing: 0) {
-            if showDemoData {
+            if showDemoData && showDemoBanner {
                 demoBanner
             }
             TabView(selection: $selectedTab) {

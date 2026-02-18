@@ -48,6 +48,7 @@ struct SettingsView: View {
 
     @AppStorage("appColorScheme") private var appColorScheme = "system"
     @AppStorage("showDemoData") private var showDemoData = false
+    @AppStorage("showDemoBanner") private var showDemoBanner = true
     @AppStorage("soundEffectsEnabled") private var soundEffectsEnabled = true
 
     @State private var showAddAccount = false
@@ -133,6 +134,12 @@ struct SettingsView: View {
                             SampleDataGenerator.removeSampleData(from: modelContext)
                         }
                         WidgetDataSync.updateSnapshot(from: modelContext)
+                    }
+
+                    if showDemoData {
+                        Toggle(isOn: $showDemoBanner) {
+                            Label("顯示範例資料提示", systemImage: "eye.trianglebadge.exclamationmark")
+                        }
                     }
 
                     NavigationLink {
