@@ -48,6 +48,8 @@ struct SettingsView: View {
 
     @AppStorage("appColorScheme") private var appColorScheme = "system"
     @AppStorage("showDemoData") private var showDemoData = false
+    @AppStorage("soundEffectsEnabled") private var soundEffectsEnabled = true
+    @AppStorage("backgroundMusicEnabled") private var backgroundMusicEnabled = true
 
     @State private var showAddAccount = false
     @State private var editingAccount: Account?
@@ -64,6 +66,16 @@ struct SettingsView: View {
                         Text("跟隨系統").tag("system")
                         Text("淺色").tag("light")
                         Text("深色").tag("dark")
+                    }
+                }
+
+                // MARK: - 音效
+                Section("音效") {
+                    Toggle(isOn: $soundEffectsEnabled) {
+                        Label("音效", systemImage: "speaker.wave.2")
+                    }
+                    Toggle(isOn: $backgroundMusicEnabled) {
+                        Label("背景音樂", systemImage: "music.note")
                     }
                 }
 
