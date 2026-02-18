@@ -290,9 +290,6 @@
 					77CE58F32F43FDE20059CF90 = {
 						CreatedOnToolsVersion = 26.2;
 						SystemCapabilities = {
-							com.apple.Push = {
-								enabled = 1;
-							};
 							com.apple.iCloud = {
 								enabled = 1;
 							};

@@ -64,6 +64,7 @@ struct AnalyticsView: View {
             ScrollView {
                 VStack(spacing: AppTheme.cardSpacing) {
                     PeriodNavigationBar(state: $periodState)
+                    totalBalanceCard
                     spendingSummaryCard
                     expenseTrendChart
                     categoryBreakdown
@@ -105,9 +106,28 @@ struct AnalyticsView: View {
         accounts.reduce(Decimal.zero) { $0 + (showDemoData ? $1.demoBalance : $1.currentBalance) }
     }
 
+    private var totalBalanceCard: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 4) {
+                Image(systemName: "chart.line.uptrend.xyaxis")
+                    .font(.subheadline.bold())
+                Text("總資產")
+                    .font(.subheadline)
+            }
+            .foregroundStyle(.white.opacity(0.85))
+            Text(CurrencyFormatter.format(totalBalance))
+                .font(.title2.bold().monospacedDigit())
+                .foregroundStyle(.white)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(AppTheme.primaryGradient)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
+    }
+
     private var spendingSummaryCard: some View {
-        VStack(spacing: 16) {
-            // MARK: 總支出 / 總收入 — 雙色塊並排
+        VStack(spacing: 12) {
+            // MARK: 總支出 / 總收入
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 4) {
@@ -144,36 +164,23 @@ struct AnalyticsView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
-            // MARK: 淨額
-            VStack(spacing: 4) {
-                Text("淨額")
-                    .font(.caption)
-                    .foregroundStyle(AppTheme.secondaryText)
+            // MARK: 第三層 — 淨額（全寬置中）
+            VStack(spacing: 6) {
                 let net = totalIncome - totalExpense
+                HStack(spacing: 4) {
+                    Image(systemName: net >= 0 ? "equal.circle" : "exclamationmark.circle")
+                        .font(.caption.bold())
+                    Text("淨額")
+                        .font(.caption)
+                }
+                .foregroundStyle(net >= 0 ? AppTheme.income : AppTheme.expense)
                 Text(CurrencyFormatter.format(net))
-                    .font(.system(.title, design: .rounded, weight: .bold).monospacedDigit())
+                    .font(.title.bold().monospacedDigit())
                     .foregroundStyle(net >= 0 ? AppTheme.income : AppTheme.expense)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
-
-            // MARK: 總資產 — 漸層底色強調
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("總資產")
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.85))
-                    Text(CurrencyFormatter.format(totalBalance))
-                        .font(.system(.title2, design: .rounded, weight: .bold).monospacedDigit())
-                        .foregroundStyle(.white)
-                }
-                Spacer()
-                Image(systemName: "chart.line.uptrend.xyaxis")
-                    .font(.title2)
-                    .foregroundStyle(.white.opacity(0.5))
-            }
-            .padding(14)
-            .background(AppTheme.primaryGradient)
+            .padding(12)
+            .background((totalIncome - totalExpense >= 0 ? AppTheme.income : AppTheme.expense).opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .frame(maxWidth: .infinity)
@@ -259,8 +266,8 @@ struct AnalyticsView: View {
                                 .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .disabled)) {
                                     VStack(spacing: 4) {
                                         Text(refDate.formatted(.dateTime.month().day().locale(Locale(identifier: "zh-TW"))))
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                            .font(.caption.bold())
+                                            .foregroundStyle(.primary)
                                         if let e = matchedExpense {
                                             Text("支出 NT$\(String(format: "%.0f", e.total))")
                                                 .font(.caption.bold())
@@ -279,7 +286,8 @@ struct AnalyticsView: View {
                                     }
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 6)
-                                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+                                    .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 8))
+                                    .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)
                                 }
                         }
                     }

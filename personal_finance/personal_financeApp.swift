@@ -24,35 +24,9 @@ import SwiftUI
 import SwiftData
 import CoreData
 import WidgetKit
-import UserNotifications
-
-class AppDelegate: NSObject, UIApplicationDelegate {
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        // 請求通知授權
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
-            print("🔔 Notification permission granted: \(granted)")
-            if let error {
-                print("❌ Notification permission error: \(error.localizedDescription)")
-            }
-        }
-        // 直接註冊遠端通知，不等待授權結果
-        UIApplication.shared.registerForRemoteNotifications()
-        return true
-    }
-
-    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
-        print("📱 Push Notification Device Token: \(token)")
-    }
-
-    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        print("❌ Failed to register for remote notifications: \(error.localizedDescription)")
-    }
-}
 
 @main
 struct personal_financeApp: App {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Transaction.self,
