@@ -91,7 +91,7 @@ final class Account {
     }
 
     var currentBalance: Decimal {
-        let allTransactions = transactions ?? []
+        let allTransactions = (transactions ?? []).filter { !$0.isDemoData }
         let incomeTotal = allTransactions
             .filter { $0.type == .income }
             .reduce(Decimal.zero) { $0 + $1.amount }
@@ -101,7 +101,7 @@ final class Account {
         let transferOutTotal = allTransactions
             .filter { $0.type == .transfer }
             .reduce(Decimal.zero) { $0 + $1.amount }
-        let transferInTotal = (transferInTransactions ?? [])
+        let transferInTotal = (transferInTransactions ?? []).filter { !$0.isDemoData }
             .reduce(Decimal.zero) { $0 + $1.amount }
         let adjustmentTotal = allTransactions
             .filter { $0.type == .adjustment }
