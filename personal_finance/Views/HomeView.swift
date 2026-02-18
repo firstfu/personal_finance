@@ -137,7 +137,7 @@ struct HomeView: View {
             }
             Spacer()
         }
-        .padding(.top, showDemoData ? 32 : 8)
+        .padding(.top, 8)
     }
 
     private var totalAssetHeader: some View {

@@ -60,52 +60,56 @@ struct ContentView: View {
         }
     }
 
-    private var mainTabView: some View {
-        TabView(selection: $selectedTab) {
-            HomeView()
-                .tabItem {
-                    Label("首頁", systemImage: "house.fill")
-                }
-                .tag(0)
-
-            AddTransactionView()
-                .tabItem {
-                    Label("記帳", systemImage: "plus.circle.fill")
-                }
-                .tag(1)
-
-            SproutTabView()
-                .tabItem {
-                    Label("豆芽", systemImage: "leaf.fill")
-                }
-                .tag(2)
-
-            AnalyticsView()
-                .tabItem {
-                    Label("分析", systemImage: "chart.bar.fill")
-                }
-                .tag(3)
-
-            SettingsView()
-                .tabItem {
-                    Label("設定", systemImage: "gearshape.fill")
-                }
-                .tag(4)
+    private var demoBanner: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "eye.trianglebadge.exclamationmark")
+                .font(.caption.bold())
+            Text("範例資料模式")
+                .font(.caption.bold())
         }
-        .tint(AppTheme.primaryDark)
-        .safeAreaInset(edge: .top, spacing: 0) {
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
+        .background(AppTheme.primary.opacity(0.9))
+        .foregroundStyle(.white)
+    }
+
+    private var mainTabView: some View {
+        VStack(spacing: 0) {
             if showDemoData {
-                HStack(spacing: 6) {
-                    Image(systemName: "eye.trianglebadge.exclamationmark")
-                        .font(.caption.bold())
-                    Text("範例資料模式")
-                        .font(.caption.bold())
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 6)
-                .background(AppTheme.primary.opacity(0.9))
-                .foregroundStyle(.white)
+                demoBanner
             }
+            TabView(selection: $selectedTab) {
+                HomeView()
+                    .tabItem {
+                        Label("首頁", systemImage: "house.fill")
+                    }
+                    .tag(0)
+
+                AddTransactionView()
+                    .tabItem {
+                        Label("記帳", systemImage: "plus.circle.fill")
+                    }
+                    .tag(1)
+
+                SproutTabView()
+                    .tabItem {
+                        Label("豆芽", systemImage: "leaf.fill")
+                    }
+                    .tag(2)
+
+                AnalyticsView()
+                    .tabItem {
+                        Label("分析", systemImage: "chart.bar.fill")
+                    }
+                    .tag(3)
+
+                SettingsView()
+                    .tabItem {
+                        Label("設定", systemImage: "gearshape.fill")
+                    }
+                    .tag(4)
+            }
+            .tint(AppTheme.primaryDark)
         }
     }
 }
