@@ -37,6 +37,8 @@ final class BackgroundNode: SKNode {
         sprite.position = CGPoint(x: sceneSize.width / 2, y: sceneSize.height / 2)
         addChild(sprite)
         currentSprite = sprite
+
+        setupClouds()
     }
 
     required init?(coder: NSCoder) {
@@ -96,36 +98,87 @@ final class BackgroundNode: SKNode {
     private func gradientColors(for stage: Int) -> (top: UIColor, bottom: UIColor) {
         switch stage {
         case 0:
-            // Warm sunrise
+            // Dreamy blush (#FFE4E1 → #FFF8DC)
             return (
-                top: UIColor(red: 0.98, green: 0.85, blue: 0.65, alpha: 1.0),
-                bottom: UIColor(red: 0.95, green: 0.92, blue: 0.82, alpha: 1.0)
+                top: UIColor(red: 1.0, green: 0.894, blue: 0.882, alpha: 1.0),
+                bottom: UIColor(red: 1.0, green: 0.973, blue: 0.863, alpha: 1.0)
             )
         case 1:
-            // Early morning
+            // Soft lavender to mint (#E8D5F5 → #E8F5E9)
             return (
-                top: UIColor(red: 0.75, green: 0.90, blue: 0.95, alpha: 1.0),
-                bottom: UIColor(red: 0.90, green: 0.95, blue: 0.88, alpha: 1.0)
+                top: UIColor(red: 0.91, green: 0.835, blue: 0.96, alpha: 1.0),
+                bottom: UIColor(red: 0.91, green: 0.96, blue: 0.914, alpha: 1.0)
             )
         case 2:
-            // Bright day
+            // Pastel sky to sage (#E0F0FF → #C8E6C9)
             return (
-                top: UIColor(red: 0.55, green: 0.82, blue: 0.95, alpha: 1.0),
-                bottom: UIColor(red: 0.85, green: 0.95, blue: 0.85, alpha: 1.0)
+                top: UIColor(red: 0.878, green: 0.941, blue: 1.0, alpha: 1.0),
+                bottom: UIColor(red: 0.784, green: 0.902, blue: 0.788, alpha: 1.0)
             )
         case 3:
-            // Lush afternoon
+            // Orchid to buttercream (#F3E5F5 → #FFF9C4)
             return (
-                top: UIColor(red: 0.45, green: 0.75, blue: 0.92, alpha: 1.0),
-                bottom: UIColor(red: 0.78, green: 0.93, blue: 0.78, alpha: 1.0)
+                top: UIColor(red: 0.953, green: 0.898, blue: 0.961, alpha: 1.0),
+                bottom: UIColor(red: 1.0, green: 0.976, blue: 0.769, alpha: 1.0)
             )
         default:
-            // Stage 4+: Golden hour
+            // Stage 4+: Rose to peach (#FFE0E6 → #FFE0B2)
             return (
-                top: UIColor(red: 1.0, green: 0.85, blue: 0.55, alpha: 1.0),
-                bottom: UIColor(red: 0.95, green: 0.95, blue: 0.80, alpha: 1.0)
+                top: UIColor(red: 1.0, green: 0.878, blue: 0.902, alpha: 1.0),
+                bottom: UIColor(red: 1.0, green: 0.878, blue: 0.698, alpha: 1.0)
             )
         }
+    }
+
+    // MARK: - Cloud Decorations
+
+    private func setupClouds() {
+        // Cloud 1: left side, high, larger
+        let cloud1 = createCloud(radius: 12)
+        cloud1.position = CGPoint(x: sceneSize.width * 0.2, y: sceneSize.height * 0.82)
+        cloud1.alpha = 0.6
+        addChild(cloud1)
+        animateCloudDrift(cloud1, range: 30, duration: 8)
+
+        // Cloud 2: right side, mid-height
+        let cloud2 = createCloud(radius: 10)
+        cloud2.position = CGPoint(x: sceneSize.width * 0.75, y: sceneSize.height * 0.75)
+        cloud2.alpha = 0.5
+        addChild(cloud2)
+        animateCloudDrift(cloud2, range: 25, duration: 10)
+
+        // Cloud 3: center, highest, smallest
+        let cloud3 = createCloud(radius: 8)
+        cloud3.position = CGPoint(x: sceneSize.width * 0.5, y: sceneSize.height * 0.9)
+        cloud3.alpha = 0.4
+        addChild(cloud3)
+        animateCloudDrift(cloud3, range: 20, duration: 12)
+    }
+
+    private func createCloud(radius: CGFloat) -> SKNode {
+        let cloud = SKNode()
+        let offsets: [(CGFloat, CGFloat, CGFloat)] = [
+            (0, 0, radius),
+            (-radius * 0.8, -radius * 0.2, radius * 0.7),
+            (radius * 0.8, -radius * 0.1, radius * 0.75),
+            (0, radius * 0.4, radius * 0.6),
+        ]
+        for (dx, dy, r) in offsets {
+            let circle = SKShapeNode(circleOfRadius: r)
+            circle.fillColor = .white
+            circle.strokeColor = .clear
+            circle.position = CGPoint(x: dx, y: dy)
+            cloud.addChild(circle)
+        }
+        return cloud
+    }
+
+    private func animateCloudDrift(_ cloud: SKNode, range: CGFloat, duration: TimeInterval) {
+        let moveRight = SKAction.moveBy(x: range, y: 0, duration: duration)
+        let moveLeft = SKAction.moveBy(x: -range, y: 0, duration: duration)
+        moveRight.timingMode = .easeInEaseOut
+        moveLeft.timingMode = .easeInEaseOut
+        cloud.run(.repeatForever(.sequence([moveRight, moveLeft])))
     }
 
     /// Creates a vertical gradient texture using Core Graphics.
