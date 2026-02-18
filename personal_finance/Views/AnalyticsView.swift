@@ -33,10 +33,10 @@
 //   - @State selectedPeriod: 當前選取的時間區間
 //   - @State selectedDate: 趨勢圖中選取的日期（用於 RuleMark 標記）
 //   - @State selectedCategoryAngle / selectedIncomeCategoryAngle: 圓餅圖選取角度
-//   - @State showExpenseLine / showIncomeLine / showNetLine: 趨勢線顯示開關
+//   - @State showExpenseLine / showIncomeLine / showAssetLine: 趨勢線顯示開關
 //
 // 注意事項：
-//   - 趨勢圖資料為累計值（dailyExpenses/dailyIncomes/dailyNet），非單日金額
+//   - 趨勢圖資料為累計值（dailyExpenses/dailyIncomes/dailyAsset），非單日金額
 //   - 金額在 Charts 渲染時透過 NSDecimalNumber 轉換為 Double
 //   - 至少須保留一條趨勢線處於開啟狀態（toggleLine 邏輯控制）
 //   - 圓餅圖使用 chartAngleSelection 實現互動，透過角度累計定位選取項
@@ -57,7 +57,7 @@ struct AnalyticsView: View {
     @State private var selectedIncomeCategoryAngle: Double?
     @State private var showExpenseLine: Bool = true
     @State private var showIncomeLine: Bool = true
-    @State private var showNetLine: Bool = false
+    @State private var showAssetLine: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -211,12 +211,12 @@ struct AnalyticsView: View {
                         }
                     }
 
-                    if showNetLine {
-                        ForEach(dailyNet, id: \.date) { data in
+                    if showAssetLine {
+                        ForEach(dailyAsset, id: \.date) { data in
                             LineMark(
                                 x: .value("日期", data.date, unit: .day),
                                 y: .value("金額", data.total),
-                                series: .value("類型", "淨額")
+                                series: .value("類型", "總資產")
                             )
                             .foregroundStyle(AppTheme.primary)
                             .interpolationMethod(.catmullRom)
@@ -227,8 +227,8 @@ struct AnalyticsView: View {
                     if let selectedDate {
                         let matchedExpense = showExpenseLine ? dailyExpenses.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }) : nil
                         let matchedIncome = showIncomeLine ? dailyIncomes.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }) : nil
-                        let matchedNet = showNetLine ? dailyNet.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }) : nil
-                        if let refDate = matchedExpense?.date ?? matchedIncome?.date ?? matchedNet?.date {
+                        let matchedAsset = showAssetLine ? dailyAsset.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }) : nil
+                        if let refDate = matchedExpense?.date ?? matchedIncome?.date ?? matchedAsset?.date {
                             RuleMark(x: .value("日期", refDate, unit: .day))
                                 .foregroundStyle(.secondary.opacity(0.5))
                                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 2]))
@@ -247,8 +247,8 @@ struct AnalyticsView: View {
                                                 .font(.caption.bold())
                                                 .foregroundStyle(AppTheme.income)
                                         }
-                                        if let n = matchedNet {
-                                            Text("淨額 NT$\(String(format: "%.0f", n.total))")
+                                        if let a = matchedAsset {
+                                            Text("總資產 NT$\(String(format: "%.0f", a.total))")
                                                 .font(.caption.bold())
                                                 .foregroundStyle(AppTheme.primary)
                                         }
@@ -280,7 +280,7 @@ struct AnalyticsView: View {
     }
 
     private var activeLineCount: Int {
-        [showExpenseLine, showIncomeLine, showNetLine].filter { $0 }.count
+        [showExpenseLine, showIncomeLine, showAssetLine].filter { $0 }.count
     }
 
     private func toggleLine(_ line: inout Bool) {
@@ -292,7 +292,7 @@ struct AnalyticsView: View {
         HStack(spacing: 8) {
             trendFilterChip(label: "支出", color: AppTheme.expense, isOn: $showExpenseLine)
             trendFilterChip(label: "收入", color: AppTheme.income, isOn: $showIncomeLine)
-            trendFilterChip(label: "淨額", color: AppTheme.primary, isOn: $showNetLine)
+            trendFilterChip(label: "總資產", color: AppTheme.primary, isOn: $showAssetLine)
         }
     }
 
@@ -324,7 +324,7 @@ struct AnalyticsView: View {
         var result: [String] = []
         if showExpenseLine { result.append("支出") }
         if showIncomeLine { result.append("收入") }
-        if showNetLine { result.append("淨額") }
+        if showAssetLine { result.append("總資產") }
         return result
     }
 
@@ -332,7 +332,7 @@ struct AnalyticsView: View {
         var result: [Color] = []
         if showExpenseLine { result.append(AppTheme.expense) }
         if showIncomeLine { result.append(AppTheme.income) }
-        if showNetLine { result.append(AppTheme.primary) }
+        if showAssetLine { result.append(AppTheme.primary) }
         return result
     }
 
@@ -364,7 +364,12 @@ struct AnalyticsView: View {
         }
     }
 
-    private var dailyNet: [(date: Date, total: Double)] {
+    private var baseBalance: Double {
+        let total = accounts.reduce(Decimal.zero) { $0 + $1.initialBalance }
+        return NSDecimalNumber(decimal: total).doubleValue
+    }
+
+    private var dailyAsset: [(date: Date, total: Double)] {
         let calendar = Calendar.current
         let allDates = Set(
             (expenses + incomes).map { calendar.startOfDay(for: $0.date) }
@@ -377,7 +382,7 @@ struct AnalyticsView: View {
             return (date: date, total: NSDecimalNumber(decimal: inc - exp).doubleValue)
         }
         .sorted { $0.date < $1.date }
-        var cumulative: Double = 0
+        var cumulative: Double = baseBalance
         return daily.map { item in
             cumulative += item.total
             return (date: item.date, total: cumulative)
