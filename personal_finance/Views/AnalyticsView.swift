@@ -106,54 +106,78 @@ struct AnalyticsView: View {
     }
 
     private var spendingSummaryCard: some View {
-        VStack(spacing: 12) {
-            HStack {
-                VStack(spacing: 4) {
-                    Text("總支出")
-                        .font(AppTheme.captionFont)
-                        .foregroundStyle(AppTheme.secondaryText)
+        VStack(spacing: 16) {
+            // MARK: 總支出 / 總收入 — 雙色塊並排
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.down.right")
+                            .font(.caption.bold())
+                        Text("總支出")
+                            .font(.caption)
+                    }
+                    .foregroundStyle(AppTheme.expense)
                     Text(CurrencyFormatter.format(totalExpense))
                         .font(.title3.bold().monospacedDigit())
                         .foregroundStyle(AppTheme.expense)
                 }
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
+                .background(AppTheme.expense.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                VStack(spacing: 4) {
-                    Text("總收入")
-                        .font(AppTheme.captionFont)
-                        .foregroundStyle(AppTheme.secondaryText)
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption.bold())
+                        Text("總收入")
+                            .font(.caption)
+                    }
+                    .foregroundStyle(AppTheme.income)
                     Text(CurrencyFormatter.format(totalIncome))
                         .font(.title3.bold().monospacedDigit())
                         .foregroundStyle(AppTheme.income)
                 }
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
+                .background(AppTheme.income.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
-            Divider()
-
+            // MARK: 淨額
             VStack(spacing: 4) {
                 Text("淨額")
-                    .font(AppTheme.captionFont)
+                    .font(.caption)
                     .foregroundStyle(AppTheme.secondaryText)
                 let net = totalIncome - totalExpense
                 Text(CurrencyFormatter.format(net))
-                    .font(AppTheme.amountFont)
+                    .font(.system(.title, design: .rounded, weight: .bold).monospacedDigit())
                     .foregroundStyle(net >= 0 ? AppTheme.income : AppTheme.expense)
             }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
 
-            Divider()
-
-            VStack(spacing: 4) {
-                Text("總資產")
-                    .font(AppTheme.captionFont)
-                    .foregroundStyle(AppTheme.secondaryText)
-                Text(CurrencyFormatter.format(totalBalance))
-                    .font(AppTheme.amountFont)
-                    .foregroundStyle(totalBalance >= 0 ? AppTheme.income : AppTheme.expense)
+            // MARK: 總資產 — 漸層底色強調
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("總資產")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.85))
+                    Text(CurrencyFormatter.format(totalBalance))
+                        .font(.system(.title2, design: .rounded, weight: .bold).monospacedDigit())
+                        .foregroundStyle(.white)
+                }
+                Spacer()
+                Image(systemName: "chart.line.uptrend.xyaxis")
+                    .font(.title2)
+                    .foregroundStyle(.white.opacity(0.5))
             }
+            .padding(14)
+            .background(AppTheme.primaryGradient)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .frame(maxWidth: .infinity)
-        .padding(20)
+        .padding(16)
         .background(AppTheme.surface)
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
     }

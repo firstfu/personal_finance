@@ -94,7 +94,7 @@ struct TransactionRow: View {
                 Text(amountText)
                     .font(.body.bold())
                     .foregroundStyle(amountColor)
-                Text(transaction.date, format: .dateTime.month().day().locale(Locale(identifier: "zh-TW")))
+                Text(transaction.date, format: Date.FormatStyle().locale(Locale(identifier: "zh-TW")).month(.defaultDigits).day())
                     .font(.caption)
                     .foregroundStyle(AppTheme.secondaryText)
                 if !isTransfer && !isAdjustment, let accountName = transaction.account?.name {

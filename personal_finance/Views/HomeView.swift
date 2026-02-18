@@ -136,9 +136,6 @@ struct HomeView: View {
                     .foregroundStyle(AppTheme.secondaryText)
             }
             Spacer()
-            Image(systemName: "bell")
-                .font(.title3)
-                .foregroundStyle(AppTheme.secondaryText)
         }
         .padding(.top, showDemoData ? 32 : 8)
     }
