@@ -73,11 +73,7 @@ struct SproutTabView: View {
                     sproutScene?.configure(stage: stage, growthPoints: plant?.growthPoints ?? 0)
                 }
             }
-            .onChange(of: hasWateredToday) { _, watered in
-                if watered {
-                    sproutScene?.setExpression(.sleeping)
-                }
-            }
+            // Note: sleeping expression removed — plant grows on every transaction now
             .overlay {
                 if showHarvestCelebration {
                     harvestCelebrationOverlay
@@ -125,9 +121,6 @@ struct SproutTabView: View {
         }
         let stage = plant?.currentStage ?? 0
         sproutScene?.configure(stage: stage, growthPoints: plant?.growthPoints ?? 0)
-        if hasWateredToday {
-            sproutScene?.setExpression(.sleeping)
-        }
     }
 
     // MARK: - 成長進度

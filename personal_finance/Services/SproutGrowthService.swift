@@ -7,8 +7,8 @@
 //   負責植物的取得/建立、澆灌成長、階段判定、收成等操作。
 //
 // 成長規則：
-//   - 基礎點數：10/天
-//   - 連續天數 bonus：+min(consecutiveDays - 1, 5)
+//   - 每次記帳成長 +3 點
+//   - 每天第一筆額外獲得連續天數 bonus：+min(consecutiveDays - 1, 5)
 //   - 漏記一天：連續天數歸零，但不扣點數
 //   - 階段門檻：0(種子) / 20(發芽) / 40(小苗) / 60(茂盛) / 80(開花結果)
 // ============================================================================
@@ -39,38 +39,43 @@ struct SproutGrowthService {
         return newPlant
     }
 
-    /// 澆灌植物（記帳後呼叫）
+    /// 澆灌植物（記帳後呼叫，每次記帳都會成長）
     func waterPlant() -> WaterResult {
         let plant = getActivePlant()
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date.now)
 
-        // 今日已澆灌過，不重複計算
+        let isFirstToday: Bool
         if let lastWatered = plant.lastWateredDate,
            calendar.isDate(lastWatered, inSameDayAs: today) {
-            return WaterResult(didGrow: false, newStage: nil, pointsEarned: 0)
+            isFirstToday = false
+        } else {
+            isFirstToday = true
         }
 
-        // 判斷是否連續
-        if let lastWatered = plant.lastWateredDate {
-            let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
-            if calendar.isDate(lastWatered, inSameDayAs: yesterday) {
-                plant.consecutiveDays += 1
+        // 每天第一筆：更新連續天數和培育天數
+        var bonus = 0
+        if isFirstToday {
+            if let lastWatered = plant.lastWateredDate {
+                let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+                if calendar.isDate(lastWatered, inSameDayAs: yesterday) {
+                    plant.consecutiveDays += 1
+                } else {
+                    plant.consecutiveDays = 1
+                }
             } else {
                 plant.consecutiveDays = 1
             }
-        } else {
-            plant.consecutiveDays = 1
+            bonus = min(plant.consecutiveDays - 1, 5)
+            plant.totalDaysNurtured += 1
         }
 
-        // 計算成長點數
-        let basePoints = 10
-        let bonus = min(plant.consecutiveDays - 1, 5)
+        // 計算成長點數：每筆 +3，第一筆額外 +bonus
+        let basePoints = 3
         let pointsEarned = basePoints + bonus
 
         plant.growthPoints += pointsEarned
         plant.lastWateredDate = today
-        plant.totalDaysNurtured += 1
 
         // 判斷階段變化
         let oldStage = plant.currentStage

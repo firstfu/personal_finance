@@ -24,11 +24,19 @@ import SwiftUI
 import SwiftData
 import CoreData
 import WidgetKit
-import UIKit
+import UserNotifications
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        UIApplication.shared.registerForRemoteNotifications()
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+            print("🔔 Notification permission granted: \(granted)")
+            if let error {
+                print("❌ Notification permission error: \(error.localizedDescription)")
+            }
+            DispatchQueue.main.async {
+                UIApplication.shared.registerForRemoteNotifications()
+            }
+        }
         return true
     }
 

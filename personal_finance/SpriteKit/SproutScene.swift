@@ -74,7 +74,6 @@ final class SproutScene: SKScene {
     private func startBlinkTimer() {
         blinkTimer = Timer.scheduledTimer(withTimeInterval: 4.0, repeats: true) { [weak self] _ in
             self?.potNode?.playBlink()
-            AudioService.shared.play(.blink)
         }
     }
 
