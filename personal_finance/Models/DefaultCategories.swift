@@ -163,6 +163,7 @@ enum DefaultCategories {
     }
 
     static func removeDuplicates(from context: ModelContext) {
+        // --- 分類去重 ---
         let allCategories = (try? context.fetch(FetchDescriptor<Category>())) ?? []
         var seenCategoryIds = Set<String>()
         for category in allCategories {
@@ -173,7 +174,21 @@ enum DefaultCategories {
                 seenCategoryIds.insert(category.seedIdentifier)
             }
         }
+        // 對沒有 seedIdentifier 的分類，以 (name + type) 去重
+        var seenCategoryNames = Set<String>()
+        for category in allCategories where !category.seedIdentifier.isEmpty {
+            seenCategoryNames.insert("\(category.name)_\(category.type.rawValue)")
+        }
+        for category in allCategories where category.seedIdentifier.isEmpty {
+            let key = "\(category.name)_\(category.type.rawValue)"
+            if seenCategoryNames.contains(key) {
+                context.delete(category)
+            } else {
+                seenCategoryNames.insert(key)
+            }
+        }
 
+        // --- 帳戶去重 ---
         let allAccounts = (try? context.fetch(FetchDescriptor<Account>())) ?? []
         var seenAccountIds = Set<String>()
         for account in allAccounts {
@@ -182,6 +197,19 @@ enum DefaultCategories {
                 context.delete(account)
             } else {
                 seenAccountIds.insert(account.seedIdentifier)
+            }
+        }
+        // 對沒有 seedIdentifier 的帳戶，以 (name + type) 去重
+        var seenAccountNames = Set<String>()
+        for account in allAccounts where !account.seedIdentifier.isEmpty {
+            seenAccountNames.insert("\(account.name)_\(account.type.rawValue)")
+        }
+        for account in allAccounts where account.seedIdentifier.isEmpty {
+            let key = "\(account.name)_\(account.type.rawValue)"
+            if seenAccountNames.contains(key) {
+                context.delete(account)
+            } else {
+                seenAccountNames.insert(key)
             }
         }
     }

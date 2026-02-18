@@ -110,6 +110,7 @@ struct personal_financeApp: App {
                         object: nil,
                         queue: .main
                     ) { _ in
+                        DefaultCategories.removeDuplicates(from: context)
                         SproutGrowthService.removeDuplicateActivePlants(from: context)
                         WidgetDataSync.updateSnapshot(from: context)
                     }

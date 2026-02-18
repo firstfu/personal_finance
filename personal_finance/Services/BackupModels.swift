@@ -54,6 +54,7 @@ struct CategoryDTO: Codable {
     let type: String
     let sortOrder: Int
     let isDefault: Bool
+    let seedIdentifier: String?
 }
 
 struct AccountDTO: Codable {
@@ -65,6 +66,7 @@ struct AccountDTO: Codable {
     let initialBalance: String
     let sortOrder: Int
     let isDefault: Bool
+    let seedIdentifier: String?
 }
 
 struct TransactionDTO: Codable {

@@ -105,7 +105,8 @@ enum BackupService {
                 colorHex: category.colorHex,
                 type: category.type.rawValue,
                 sortOrder: category.sortOrder,
-                isDefault: category.isDefault
+                isDefault: category.isDefault,
+                seedIdentifier: category.seedIdentifier
             )
         }
 
@@ -120,7 +121,8 @@ enum BackupService {
                 colorHex: account.colorHex,
                 initialBalance: "\(account.initialBalance)",
                 sortOrder: account.sortOrder,
-                isDefault: account.isDefault
+                isDefault: account.isDefault,
+                seedIdentifier: account.seedIdentifier
             )
         }
 
@@ -210,7 +212,8 @@ enum BackupService {
                     colorHex: dto.colorHex,
                     type: TransactionType(rawValue: dto.type) ?? .expense,
                     sortOrder: dto.sortOrder,
-                    isDefault: dto.isDefault
+                    isDefault: dto.isDefault,
+                    seedIdentifier: dto.seedIdentifier ?? ""
                 )
                 context.insert(category)
                 categoryMap[dto.backupId] = category
@@ -226,7 +229,8 @@ enum BackupService {
                     colorHex: dto.colorHex,
                     initialBalance: Decimal(string: dto.initialBalance) ?? 0,
                     sortOrder: dto.sortOrder,
-                    isDefault: dto.isDefault
+                    isDefault: dto.isDefault,
+                    seedIdentifier: dto.seedIdentifier ?? ""
                 )
                 context.insert(account)
                 accountMap[dto.backupId] = account

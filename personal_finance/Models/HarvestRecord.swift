@@ -16,10 +16,12 @@ import SwiftData
     var totalGrowthPoints: Int = 0
     var totalDaysNurtured: Int = 0
     var longestStreak: Int = 0
+    var isDemoData: Bool = false
 
-    init(totalGrowthPoints: Int, totalDaysNurtured: Int, longestStreak: Int) {
+    init(totalGrowthPoints: Int, totalDaysNurtured: Int, longestStreak: Int, isDemoData: Bool = false) {
         self.totalGrowthPoints = totalGrowthPoints
         self.totalDaysNurtured = totalDaysNurtured
         self.longestStreak = longestStreak
+        self.isDemoData = isDemoData
     }
 }

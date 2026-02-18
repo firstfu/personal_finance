@@ -28,8 +28,31 @@ import SwiftData
     var isActive: Bool = true
     var harvestedAt: Date? = nil
     var totalDaysNurtured: Int = 0
+    var isDemoData: Bool = false
 
     init() {}
+
+    init(
+        currentStage: Int,
+        growthPoints: Int,
+        createdAt: Date,
+        lastWateredDate: Date?,
+        consecutiveDays: Int,
+        isActive: Bool,
+        harvestedAt: Date?,
+        totalDaysNurtured: Int,
+        isDemoData: Bool = false
+    ) {
+        self.currentStage = currentStage
+        self.growthPoints = growthPoints
+        self.createdAt = createdAt
+        self.lastWateredDate = lastWateredDate
+        self.consecutiveDays = consecutiveDays
+        self.isActive = isActive
+        self.harvestedAt = harvestedAt
+        self.totalDaysNurtured = totalDaysNurtured
+        self.isDemoData = isDemoData
+    }
 
     /// 階段名稱
     var stageName: String {

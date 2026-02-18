@@ -53,8 +53,7 @@ enum SampleDataGenerator {
         }
 
         let cash = account("現金")
-        let bank = account("銀行存款")
-        let credit = account("信用卡")
+        let bank = account("合庫")
 
         // -- 收入 --
         // 薪資 x3
@@ -72,29 +71,29 @@ enum SampleDataGenerator {
         // 飲食 x8
         insert(context, amount: 85, type: .expense, cat: category("飲食", type: .expense), acc: cash, note: "早餐 蛋餅加奶茶", date: daysAgo(0))
         insert(context, amount: 150, type: .expense, cat: category("飲食", type: .expense), acc: cash, note: "午餐便當", date: daysAgo(0))
-        insert(context, amount: 280, type: .expense, cat: category("飲食", type: .expense), acc: credit, note: "晚餐聚會", date: daysAgo(2))
+        insert(context, amount: 280, type: .expense, cat: category("飲食", type: .expense), acc: bank, note: "晚餐聚會", date: daysAgo(2))
         insert(context, amount: 120, type: .expense, cat: category("飲食", type: .expense), acc: cash, note: "手搖飲", date: daysAgo(4))
-        insert(context, amount: 500, type: .expense, cat: category("飲食", type: .expense), acc: credit, note: "朋友聚餐", date: daysAgo(8))
+        insert(context, amount: 500, type: .expense, cat: category("飲食", type: .expense), acc: bank, note: "朋友聚餐", date: daysAgo(8))
         insert(context, amount: 95, type: .expense, cat: category("飲食", type: .expense), acc: cash, note: "超商咖啡", date: daysAgo(12))
-        insert(context, amount: 350, type: .expense, cat: category("飲食", type: .expense), acc: credit, note: "週末brunch", date: daysAgo(18))
+        insert(context, amount: 350, type: .expense, cat: category("飲食", type: .expense), acc: bank, note: "週末brunch", date: daysAgo(18))
         insert(context, amount: 180, type: .expense, cat: category("飲食", type: .expense), acc: cash, note: "夜市小吃", date: daysAgo(25))
 
         // 交通 x5
         insert(context, amount: 35, type: .expense, cat: category("交通", type: .expense), acc: cash, note: "公車", date: daysAgo(1))
-        insert(context, amount: 280, type: .expense, cat: category("交通", type: .expense), acc: credit, note: "加油", date: daysAgo(7))
-        insert(context, amount: 1500, type: .expense, cat: category("交通", type: .expense), acc: credit, note: "高鐵來回", date: daysAgo(14))
+        insert(context, amount: 280, type: .expense, cat: category("交通", type: .expense), acc: bank, note: "加油", date: daysAgo(7))
+        insert(context, amount: 1500, type: .expense, cat: category("交通", type: .expense), acc: bank, note: "高鐵來回", date: daysAgo(14))
         insert(context, amount: 50, type: .expense, cat: category("交通", type: .expense), acc: cash, note: "捷運儲值", date: daysAgo(21))
-        insert(context, amount: 250, type: .expense, cat: category("交通", type: .expense), acc: credit, note: "計程車", date: daysAgo(30))
+        insert(context, amount: 250, type: .expense, cat: category("交通", type: .expense), acc: bank, note: "計程車", date: daysAgo(30))
 
         // 娛樂 x3
-        insert(context, amount: 350, type: .expense, cat: category("娛樂", type: .expense), acc: credit, note: "電影票 x2", date: daysAgo(3))
-        insert(context, amount: 1200, type: .expense, cat: category("娛樂", type: .expense), acc: credit, note: "KTV 包廂", date: daysAgo(10))
-        insert(context, amount: 590, type: .expense, cat: category("娛樂", type: .expense), acc: credit, note: "串流訂閱年費", date: daysAgo(28))
+        insert(context, amount: 350, type: .expense, cat: category("娛樂", type: .expense), acc: bank, note: "電影票 x2", date: daysAgo(3))
+        insert(context, amount: 1200, type: .expense, cat: category("娛樂", type: .expense), acc: bank, note: "KTV 包廂", date: daysAgo(10))
+        insert(context, amount: 590, type: .expense, cat: category("娛樂", type: .expense), acc: bank, note: "串流訂閱年費", date: daysAgo(28))
 
         // 購物 x3
-        insert(context, amount: 299, type: .expense, cat: category("購物", type: .expense), acc: credit, note: "手機殼", date: daysAgo(6))
-        insert(context, amount: 1280, type: .expense, cat: category("購物", type: .expense), acc: credit, note: "運動鞋", date: daysAgo(16))
-        insert(context, amount: 3500, type: .expense, cat: category("購物", type: .expense), acc: credit, note: "藍牙耳機", date: daysAgo(35))
+        insert(context, amount: 299, type: .expense, cat: category("購物", type: .expense), acc: bank, note: "手機殼", date: daysAgo(6))
+        insert(context, amount: 1280, type: .expense, cat: category("購物", type: .expense), acc: bank, note: "運動鞋", date: daysAgo(16))
+        insert(context, amount: 3500, type: .expense, cat: category("購物", type: .expense), acc: bank, note: "藍牙耳機", date: daysAgo(35))
 
         // 居住 x3
         insert(context, amount: 12000, type: .expense, cat: category("居住", type: .expense), acc: bank, note: "房租", date: daysAgo(2))
@@ -107,10 +106,13 @@ enum SampleDataGenerator {
 
         // 教育 x2
         insert(context, amount: 350, type: .expense, cat: category("教育", type: .expense), acc: cash, note: "程式書籍", date: daysAgo(22))
-        insert(context, amount: 680, type: .expense, cat: category("教育", type: .expense), acc: credit, note: "線上課程", date: daysAgo(45))
+        insert(context, amount: 680, type: .expense, cat: category("教育", type: .expense), acc: bank, note: "線上課程", date: daysAgo(45))
 
         // 其他支出 x1
         insert(context, amount: 150, type: .expense, cat: category("其他", type: .expense), acc: cash, note: "影印費", date: daysAgo(13))
+
+        // -- 豆芽養成 --
+        insertSproutData(into: context, daysAgo: daysAgo)
 
         try? context.save()
     }
@@ -118,10 +120,28 @@ enum SampleDataGenerator {
     static func removeSampleData(from context: ModelContext) {
         let predicate = #Predicate<Transaction> { $0.isDemoData == true }
         let descriptor = FetchDescriptor<Transaction>(predicate: predicate)
-        guard let demoTransactions = try? context.fetch(descriptor) else { return }
-        for tx in demoTransactions {
-            context.delete(tx)
+        if let demoTransactions = try? context.fetch(descriptor) {
+            for tx in demoTransactions {
+                context.delete(tx)
+            }
         }
+
+        let sproutPredicate = #Predicate<SproutPlant> { $0.isDemoData == true }
+        let sproutDescriptor = FetchDescriptor<SproutPlant>(predicate: sproutPredicate)
+        if let demoPlants = try? context.fetch(sproutDescriptor) {
+            for plant in demoPlants {
+                context.delete(plant)
+            }
+        }
+
+        let harvestPredicate = #Predicate<HarvestRecord> { $0.isDemoData == true }
+        let harvestDescriptor = FetchDescriptor<HarvestRecord>(predicate: harvestPredicate)
+        if let demoRecords = try? context.fetch(harvestDescriptor) {
+            for record in demoRecords {
+                context.delete(record)
+            }
+        }
+
         try? context.save()
     }
 
@@ -144,5 +164,62 @@ enum SampleDataGenerator {
             isDemoData: true
         )
         context.insert(tx)
+    }
+
+    /// 插入豆芽養成範例資料：1 株活躍植物（小苗階段）+ 2 筆收成紀錄
+    private static func insertSproutData(into context: ModelContext, daysAgo: (Int) -> Date) {
+        // 已收成的植物 1（90 天前開始，60 天前收成）
+        let harvested1 = SproutPlant(
+            currentStage: 4,
+            growthPoints: 85,
+            createdAt: daysAgo(90),
+            lastWateredDate: daysAgo(60),
+            consecutiveDays: 8,
+            isActive: false,
+            harvestedAt: daysAgo(60),
+            totalDaysNurtured: 18,
+            isDemoData: true
+        )
+        context.insert(harvested1)
+
+        let record1 = HarvestRecord(totalGrowthPoints: 85, totalDaysNurtured: 18, longestStreak: 8, isDemoData: true)
+        record1.harvestedAt = daysAgo(60)
+        context.insert(record1)
+
+        // 已收成的植物 2（55 天前開始，30 天前收成）
+        let harvested2 = SproutPlant(
+            currentStage: 4,
+            growthPoints: 92,
+            createdAt: daysAgo(55),
+            lastWateredDate: daysAgo(30),
+            consecutiveDays: 12,
+            isActive: false,
+            harvestedAt: daysAgo(30),
+            totalDaysNurtured: 22,
+            isDemoData: true
+        )
+        context.insert(harvested2)
+
+        let record2 = HarvestRecord(totalGrowthPoints: 92, totalDaysNurtured: 22, longestStreak: 12, isDemoData: true)
+        record2.harvestedAt = daysAgo(30)
+        context.insert(record2)
+
+        // 已收成的植物 3（25 天前開始，10 天前收成）
+        let harvested3 = SproutPlant(
+            currentStage: 4,
+            growthPoints: 80,
+            createdAt: daysAgo(25),
+            lastWateredDate: daysAgo(10),
+            consecutiveDays: 5,
+            isActive: false,
+            harvestedAt: daysAgo(10),
+            totalDaysNurtured: 12,
+            isDemoData: true
+        )
+        context.insert(harvested3)
+
+        let record3 = HarvestRecord(totalGrowthPoints: 80, totalDaysNurtured: 12, longestStreak: 5, isDemoData: true)
+        record3.harvestedAt = daysAgo(10)
+        context.insert(record3)
     }
 }
