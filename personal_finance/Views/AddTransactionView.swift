@@ -63,7 +63,7 @@ struct AddTransactionView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(.systemGroupedBackground)
+                AppTheme.background
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
