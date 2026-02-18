@@ -50,7 +50,7 @@ struct SproutTabView: View {
                 .padding(.bottom, 32)
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle("我的豆芽")
+            .navigationTitle("我的小豆芽")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -73,6 +73,11 @@ struct SproutTabView: View {
                     sproutScene?.configure(stage: stage, growthPoints: plant?.growthPoints ?? 0)
                 }
             }
+            .onChange(of: hasWateredToday) { _, watered in
+                if watered {
+                    sproutScene?.setExpression(.sleeping)
+                }
+            }
             .overlay {
                 if showHarvestCelebration {
                     harvestCelebrationOverlay
@@ -84,19 +89,30 @@ struct SproutTabView: View {
     // MARK: - SpriteKit 植物視覺呈現
 
     private var plantVisual: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             if let scene = sproutScene {
                 SpriteView(scene: scene, options: [.allowsTransparency])
-                    .frame(width: 350, height: 350)
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 380)
+                    .clipShape(RoundedRectangle(cornerRadius: 32))
             } else {
                 ProgressView()
-                    .frame(width: 350, height: 350)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 380)
             }
 
-            Text(plant?.stageName ?? "種子")
-                .font(.title2.bold())
-                .foregroundStyle(AppTheme.onBackground)
+            HStack(spacing: 8) {
+                Text("我的小豆芽")
+                    .font(.title2.bold())
+                    .foregroundStyle(AppTheme.onBackground)
+
+                Text("Lv \(plant?.currentStage ?? 0)")
+                    .font(.caption.bold())
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Capsule().fill(stageColor))
+            }
         }
     }
 
@@ -109,6 +125,9 @@ struct SproutTabView: View {
         }
         let stage = plant?.currentStage ?? 0
         sproutScene?.configure(stage: stage, growthPoints: plant?.growthPoints ?? 0)
+        if hasWateredToday {
+            sproutScene?.setExpression(.sleeping)
+        }
     }
 
     // MARK: - 成長進度
@@ -194,14 +213,14 @@ struct SproutTabView: View {
                     .font(.title3)
                     .foregroundStyle(watered ? AppTheme.income : AppTheme.secondaryText)
 
-                Text(watered ? "今日已記帳" : "今日尚未記帳")
+                Text(watered ? "今天已澆水囉~" : "今日尚未記帳")
                     .font(.headline)
                     .foregroundStyle(AppTheme.onBackground)
 
                 Spacer()
             }
 
-            Text(watered ? "繼續保持，豆芽正在成長～" : "去記帳澆灌你的豆芽吧！")
+            Text(watered ? "豆芽正在開心成長中~" : "去記帳澆灌你的小豆芽吧！")
                 .font(.subheadline)
                 .foregroundStyle(AppTheme.secondaryText)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -301,6 +320,7 @@ struct SproutTabView: View {
     private func performHarvest() {
         let service = SproutGrowthService(modelContext: modelContext)
         if service.harvestPlant() != nil {
+            AudioService.shared.play(.harvest)
             UINotificationFeedbackGenerator().notificationOccurred(.success)
 
             sproutScene?.playStageUpAnimation(newStage: 0) { [self] in
