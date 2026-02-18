@@ -49,11 +49,27 @@ final class BackgroundNode: SKNode {
 
     // MARK: - Public Methods
 
+    /// Updates the background for the current color scheme (light/dark mode).
+    func updateColorScheme(isDark: Bool) {
+        guard isDark != isDarkMode else { return }
+        isDarkMode = isDark
+        updateForStage(currentStage, animated: true)
+        // Update cloud opacity for dark mode
+        children.compactMap { $0 as? SKNode }.forEach { node in
+            // Clouds are SKNodes with SKShapeNode children (not SKSpriteNode)
+            if node !== currentSprite && !(node is SKSpriteNode) {
+                let targetAlpha: CGFloat = isDark ? 0.15 : node.userData?["originalAlpha"] as? CGFloat ?? 0.5
+                node.run(.fadeAlpha(to: targetAlpha, duration: 0.5))
+            }
+        }
+    }
+
     /// Updates the background gradient based on the plant's growth stage.
     /// - Parameters:
     ///   - stage: The plant's current growth stage (0-4+)
     ///   - animated: Whether to cross-fade to the new gradient
     func updateForStage(_ stage: Int, animated: Bool) {
+        currentStage = stage
         let colors = gradientColors(for: stage)
         let texture = createGradientTexture(
             size: sceneSize,
