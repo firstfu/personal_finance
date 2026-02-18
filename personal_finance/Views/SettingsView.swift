@@ -162,6 +162,18 @@ struct SettingsView: View {
 
                 // MARK: - 關於
                 Section("關於") {
+                    NavigationLink {
+                        PrivacyPolicyView()
+                    } label: {
+                        Label("隱私權政策", systemImage: "lock.shield")
+                    }
+
+                    NavigationLink {
+                        TermsOfServiceView()
+                    } label: {
+                        Label("使用條款", systemImage: "doc.plaintext")
+                    }
+
                     HStack {
                         Text("版本")
                         Spacer()
