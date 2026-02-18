@@ -174,8 +174,8 @@ final class PlantNode: SKNode {
 
     private func buildSeed() {
         // Brown ellipse with small crack line
-        let seedShape = SKShapeNode(ellipseOf: CGSize(width: 24, height: 18))
-        seedShape.fillColor = SKColor(red: 0.55, green: 0.38, blue: 0.18, alpha: 1.0)
+        let seedShape = SKShapeNode(ellipseOf: CGSize(width: 30, height: 22))
+        seedShape.fillColor = SKColor(red: 0.65, green: 0.48, blue: 0.28, alpha: 1.0)
         seedShape.strokeColor = SKColor(red: 0.45, green: 0.30, blue: 0.15, alpha: 1.0)
         seedShape.lineWidth = 1.5
         seedShape.position = CGPoint(x: centerX, y: baseY + 8)
@@ -189,6 +189,13 @@ final class PlantNode: SKNode {
         crack.lineWidth = 1.0
         seedShape.addChild(crack)
 
+        // Add tiny sparkle
+        let sparkle = SKShapeNode(circleOfRadius: 2)
+        sparkle.fillColor = SKColor(white: 1.0, alpha: 0.6)
+        sparkle.strokeColor = .clear
+        sparkle.position = CGPoint(x: 6, y: 5)
+        seedShape.addChild(sparkle)
+
         addChild(seedShape)
         seedNode = seedShape
     }
@@ -197,18 +204,18 @@ final class PlantNode: SKNode {
         // Stem
         let stemPath = createStemPath(height: 50, curve: 8, width: 3)
         let stem = SKShapeNode(path: stemPath)
-        stem.strokeColor = SKColor(red: 0.45, green: 0.72, blue: 0.22, alpha: 1.0)
+        stem.strokeColor = SKColor(red: 0.45, green: 0.78, blue: 0.30, alpha: 1.0)
         stem.lineWidth = 3
         stem.lineCap = .round
         addChild(stem)
         stemNode = stem
 
         // 2 small cotyledon leaves
-        let leafColor = SKColor(red: 0.55, green: 0.78, blue: 0.25, alpha: 1.0)
+        let leafColor = SKColor(red: 0.55, green: 0.82, blue: 0.35, alpha: 1.0)
 
         let leaf1 = createLeaf(
             at: CGPoint(x: centerX - 4, y: baseY + 30),
-            size: CGSize(width: 18, height: 10),
+            size: CGSize(width: 22, height: 14),
             angle: -CGFloat.pi / 6,
             color: leafColor
         )
@@ -217,7 +224,7 @@ final class PlantNode: SKNode {
 
         let leaf2 = createLeaf(
             at: CGPoint(x: centerX + 4, y: baseY + 32),
-            size: CGSize(width: 18, height: 10),
+            size: CGSize(width: 22, height: 14),
             angle: CGFloat.pi / 6,
             color: leafColor
         )
@@ -229,18 +236,18 @@ final class PlantNode: SKNode {
         // Stem
         let stemPath = createStemPath(height: 90, curve: 12, width: 4)
         let stem = SKShapeNode(path: stemPath)
-        stem.strokeColor = SKColor(red: 0.40, green: 0.68, blue: 0.20, alpha: 1.0)
+        stem.strokeColor = SKColor(red: 0.45, green: 0.78, blue: 0.30, alpha: 1.0)
         stem.lineWidth = 4
         stem.lineCap = .round
         addChild(stem)
         stemNode = stem
 
         // 3 leaves at varying heights
-        let leafColor = SKColor(red: 0.50, green: 0.76, blue: 0.22, alpha: 1.0)
+        let leafColor = SKColor(red: 0.55, green: 0.82, blue: 0.35, alpha: 1.0)
 
         let leaf1 = createLeaf(
             at: CGPoint(x: centerX - 6, y: baseY + 40),
-            size: CGSize(width: 22, height: 12),
+            size: CGSize(width: 26, height: 16),
             angle: -CGFloat.pi / 5,
             color: leafColor
         )
@@ -249,7 +256,7 @@ final class PlantNode: SKNode {
 
         let leaf2 = createLeaf(
             at: CGPoint(x: centerX + 8, y: baseY + 55),
-            size: CGSize(width: 24, height: 13),
+            size: CGSize(width: 28, height: 17),
             angle: CGFloat.pi / 4.5,
             color: leafColor
         )
@@ -258,7 +265,7 @@ final class PlantNode: SKNode {
 
         let leaf3 = createLeaf(
             at: CGPoint(x: centerX - 5, y: baseY + 70),
-            size: CGSize(width: 20, height: 11),
+            size: CGSize(width: 24, height: 15),
             angle: -CGFloat.pi / 6,
             color: leafColor
         )
@@ -270,7 +277,7 @@ final class PlantNode: SKNode {
         // Stem
         let stemPath = createStemPath(height: 130, curve: 15, width: 5.5)
         let stem = SKShapeNode(path: stemPath)
-        stem.strokeColor = SKColor(red: 0.30, green: 0.55, blue: 0.15, alpha: 1.0)
+        stem.strokeColor = SKColor(red: 0.40, green: 0.75, blue: 0.28, alpha: 1.0)
         stem.lineWidth = 5.5
         stem.lineCap = .round
         addChild(stem)
@@ -292,11 +299,11 @@ final class PlantNode: SKNode {
         addChild(branch2)
 
         // 6 leaves
-        let leafColor = SKColor(red: 0.35, green: 0.65, blue: 0.18, alpha: 1.0)
+        let leafColor = SKColor(red: 0.40, green: 0.75, blue: 0.28, alpha: 1.0)
 
         let leaf1 = createLeaf(
             at: CGPoint(x: centerX - 8, y: baseY + 50),
-            size: CGSize(width: 26, height: 14),
+            size: CGSize(width: 30, height: 18),
             angle: -CGFloat.pi / 4,
             color: leafColor
         )
@@ -305,7 +312,7 @@ final class PlantNode: SKNode {
 
         let leaf2 = createLeaf(
             at: CGPoint(x: centerX + 10, y: baseY + 65),
-            size: CGSize(width: 28, height: 15),
+            size: CGSize(width: 32, height: 19),
             angle: CGFloat.pi / 3.5,
             color: leafColor
         )
@@ -314,7 +321,7 @@ final class PlantNode: SKNode {
 
         let leaf3 = createLeaf(
             at: CGPoint(x: centerX - 6, y: baseY + 80),
-            size: CGSize(width: 24, height: 13),
+            size: CGSize(width: 28, height: 17),
             angle: -CGFloat.pi / 6,
             color: leafColor
         )
@@ -323,7 +330,7 @@ final class PlantNode: SKNode {
 
         let leaf4 = createLeaf(
             at: CGPoint(x: centerX + 12, y: baseY + 95),
-            size: CGSize(width: 27, height: 14),
+            size: CGSize(width: 31, height: 18),
             angle: CGFloat.pi / 4,
             color: leafColor
         )
@@ -332,7 +339,7 @@ final class PlantNode: SKNode {
 
         let leaf5 = createLeaf(
             at: CGPoint(x: centerX - 7, y: baseY + 110),
-            size: CGSize(width: 25, height: 13),
+            size: CGSize(width: 29, height: 17),
             angle: -CGFloat.pi / 5,
             color: leafColor
         )
@@ -341,7 +348,7 @@ final class PlantNode: SKNode {
 
         let leaf6 = createLeaf(
             at: CGPoint(x: centerX + 8, y: baseY + 120),
-            size: CGSize(width: 23, height: 12),
+            size: CGSize(width: 27, height: 16),
             angle: CGFloat.pi / 6,
             color: leafColor
         )
@@ -357,9 +364,9 @@ final class PlantNode: SKNode {
         let flower = SKNode()
         flower.position = CGPoint(x: centerX + 15 * 0.3, y: baseY + 130)
 
-        // 5 pink oval petals arranged in circle
-        let petalColor = SKColor(red: 1.0, green: 0.75, blue: 0.85, alpha: 1.0)
-        let petalCount = 5
+        // 6 pink oval petals arranged in circle
+        let petalColor = SKColor(red: 1.0, green: 0.70, blue: 0.82, alpha: 1.0)
+        let petalCount = 6
         let angleStep = (2 * CGFloat.pi) / CGFloat(petalCount)
 
         for i in 0..<petalCount {
@@ -367,7 +374,7 @@ final class PlantNode: SKNode {
             let petalX = cos(angle) * 10
             let petalY = sin(angle) * 10
 
-            let petal = SKShapeNode(ellipseOf: CGSize(width: 12, height: 20))
+            let petal = SKShapeNode(ellipseOf: CGSize(width: 14, height: 22))
             petal.fillColor = petalColor
             petal.strokeColor = SKColor(red: 0.9, green: 0.65, blue: 0.75, alpha: 1.0)
             petal.lineWidth = 1.0
@@ -377,7 +384,7 @@ final class PlantNode: SKNode {
         }
 
         // Yellow center
-        let center = SKShapeNode(circleOfRadius: 7)
+        let center = SKShapeNode(circleOfRadius: 8)
         center.fillColor = SKColor(red: 1.0, green: 0.85, blue: 0.30, alpha: 1.0)
         center.strokeColor = SKColor(red: 0.9, green: 0.75, blue: 0.25, alpha: 1.0)
         center.lineWidth = 1.0
@@ -410,30 +417,12 @@ final class PlantNode: SKNode {
     }
 
     private func createLeaf(at position: CGPoint, size: CGSize, angle: CGFloat, color: SKColor) -> SKShapeNode {
-        // Pointed ellipse using 2 quad curves
-        let path = CGMutablePath()
-
-        let halfWidth = size.width / 2
-        let halfHeight = size.height / 2
-
-        path.move(to: CGPoint(x: -halfWidth, y: 0))
-        path.addQuadCurve(
-            to: CGPoint(x: halfWidth, y: 0),
-            control: CGPoint(x: 0, y: halfHeight)
-        )
-        path.addQuadCurve(
-            to: CGPoint(x: -halfWidth, y: 0),
-            control: CGPoint(x: 0, y: -halfHeight)
-        )
-        path.closeSubpath()
-
-        let leaf = SKShapeNode(path: path)
+        let leaf = SKShapeNode(ellipseOf: size)
         leaf.fillColor = color
         leaf.strokeColor = color.darker()
         leaf.lineWidth = 1.0
         leaf.position = position
         leaf.zRotation = angle
-
         return leaf
     }
 
