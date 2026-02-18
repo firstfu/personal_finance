@@ -114,6 +114,13 @@ final class BackgroundNode: SKNode {
     /// - Parameter stage: The plant's growth stage
     /// - Returns: A tuple containing the top and bottom UIColors
     private func gradientColors(for stage: Int) -> (top: UIColor, bottom: UIColor) {
+        if isDarkMode {
+            return darkGradientColors(for: stage)
+        }
+        return lightGradientColors(for: stage)
+    }
+
+    private func lightGradientColors(for stage: Int) -> (top: UIColor, bottom: UIColor) {
         switch stage {
         case 0:
             // Dreamy blush (#FFE4E1 → #FFF8DC)
@@ -144,6 +151,41 @@ final class BackgroundNode: SKNode {
             return (
                 top: UIColor(red: 1.0, green: 0.878, blue: 0.902, alpha: 1.0),
                 bottom: UIColor(red: 1.0, green: 0.878, blue: 0.698, alpha: 1.0)
+            )
+        }
+    }
+
+    private func darkGradientColors(for stage: Int) -> (top: UIColor, bottom: UIColor) {
+        switch stage {
+        case 0:
+            // Dark warm: deep plum → charcoal brown
+            return (
+                top: UIColor(red: 0.15, green: 0.10, blue: 0.12, alpha: 1.0),
+                bottom: UIColor(red: 0.12, green: 0.11, blue: 0.10, alpha: 1.0)
+            )
+        case 1:
+            // Dark lavender → deep teal
+            return (
+                top: UIColor(red: 0.14, green: 0.11, blue: 0.18, alpha: 1.0),
+                bottom: UIColor(red: 0.10, green: 0.15, blue: 0.13, alpha: 1.0)
+            )
+        case 2:
+            // Dark navy → deep forest
+            return (
+                top: UIColor(red: 0.08, green: 0.12, blue: 0.18, alpha: 1.0),
+                bottom: UIColor(red: 0.10, green: 0.16, blue: 0.11, alpha: 1.0)
+            )
+        case 3:
+            // Dark violet → deep olive
+            return (
+                top: UIColor(red: 0.16, green: 0.10, blue: 0.18, alpha: 1.0),
+                bottom: UIColor(red: 0.14, green: 0.14, blue: 0.08, alpha: 1.0)
+            )
+        default:
+            // Stage 4+: Dark rose → deep amber
+            return (
+                top: UIColor(red: 0.18, green: 0.10, blue: 0.12, alpha: 1.0),
+                bottom: UIColor(red: 0.16, green: 0.13, blue: 0.08, alpha: 1.0)
             )
         }
     }

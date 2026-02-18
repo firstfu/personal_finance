@@ -16,6 +16,7 @@ struct SproutTabView: View {
     @Query(filter: #Predicate<SproutPlant> { $0.isActive == true })
     private var activePlants: [SproutPlant]
 
+    @Environment(\.colorScheme) private var colorScheme
     @State private var showHarvestGallery = false
     @State private var showHarvestCelebration = false
     @State private var sproutScene: SproutScene?
@@ -74,6 +75,9 @@ struct SproutTabView: View {
                 }
             }
             // Note: sleeping expression removed — plant grows on every transaction now
+            .onChange(of: colorScheme) { _, newScheme in
+                sproutScene?.updateColorScheme(isDark: newScheme == .dark)
+            }
             .overlay {
                 if showHarvestCelebration {
                     harvestCelebrationOverlay
@@ -93,7 +97,15 @@ struct SproutTabView: View {
                         .frame(height: 380)
 
                     VStack {
+                        LinearGradient(
+                            colors: [Color(.systemGroupedBackground), .clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .frame(height: 60)
+
                         Spacer()
+
                         LinearGradient(
                             colors: [.clear, Color(.systemGroupedBackground)],
                             startPoint: .top,
@@ -134,6 +146,7 @@ struct SproutTabView: View {
             sproutScene = scene
         }
         let stage = plant?.currentStage ?? 0
+        sproutScene?.updateColorScheme(isDark: colorScheme == .dark)
         sproutScene?.configure(stage: stage, growthPoints: plant?.growthPoints ?? 0)
     }
 
