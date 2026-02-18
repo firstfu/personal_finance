@@ -49,7 +49,6 @@ struct SettingsView: View {
     @AppStorage("appColorScheme") private var appColorScheme = "system"
     @AppStorage("showDemoData") private var showDemoData = false
     @AppStorage("soundEffectsEnabled") private var soundEffectsEnabled = true
-    @AppStorage("backgroundMusicEnabled") private var backgroundMusicEnabled = true
 
     @State private var showAddAccount = false
     @State private var editingAccount: Account?
@@ -73,9 +72,6 @@ struct SettingsView: View {
                 Section("音效") {
                     Toggle(isOn: $soundEffectsEnabled) {
                         Label("音效", systemImage: "speaker.wave.2")
-                    }
-                    Toggle(isOn: $backgroundMusicEnabled) {
-                        Label("背景音樂", systemImage: "music.note")
                     }
                 }
 
